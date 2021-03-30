@@ -1,0 +1,16 @@
+target=orads3vm1
+n_threads=1
+ramp_rate=10
+run_time=0
+db_size=10GB
+warmup_time=1
+think_time=0
+pct_newcustomers=20
+n_searches=3
+search_batch_size=5
+n_line_items=5
+virt_dir=ds2
+page_type=php
+windows_perf_host=
+linux_perf_host=
+detailed_view=n

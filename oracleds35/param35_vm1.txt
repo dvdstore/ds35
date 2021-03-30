@@ -1,0 +1,12 @@
+target=orads35vm1
+db_size=3GB 
+warmup_time=10
+run_time=10
+n_threads=10 
+pct_newcustomers=0 
+pct_newmember=0
+pct_newreviews=0
+pct_newhelpfulness=0
+n_reviews=3
+ramp_rate=5
+n_stores=5

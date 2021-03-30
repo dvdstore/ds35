@@ -1,0 +1,7 @@
+11.0
+5
+1       SQLSMALLINT         0       2       ","    1     ORDERLINEID                ""
+2       SQLINT              0       4       ","    2     ORDERID                    ""
+3       SQLINT              0       4       ","    3     PROD_ID                    ""
+4       SQLSMALLINT         0       2       ","    4     QUANTITY                   ""
+5       SQLDATETIME         0       8       ""     5     ORDERDATE                  ""
