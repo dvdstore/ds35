@@ -253,28 +253,28 @@ if(lc($^O) ne lc("linux"))  #If System on which perl script executes is windows
 
 
 #This script assumes directory/folder structure as follows
-# On linux ds3 folder will be at root
+# On linux ds35 folder will be at root
 # /
-# /ds3/
-# /ds3/data_files/
-# /ds3/data_files/cust/
-# /ds3/data_files/orders/
-# /ds3/data_files/prod/
-# /ds3/drivers/
-# /ds3/mysqlds3/
-# /ds3/mysqlds3/build/
-# /ds3/mysqlds3/load/
-# /ds3/mysqlds3/web/
-# /ds3/oracleds3/
-# /ds3/oracleds3/build/
-# /ds3/oracleds3/load/
-# /ds3/oracleds3/web/
-# /ds3/sqlserverds3/
-# /ds3/sqlserverds3/build/
-# /ds3/sqlserverds3/load/
-# /ds3/sqlserverds3/web/
+# /ds35/
+# /ds35/data_files/
+# /ds35/data_files/cust/
+# /ds35/data_files/orders/
+# /ds35/data_files/prod/
+# /ds35/drivers/
+# /ds35/mysqlds35/
+# /ds35/mysqlds35/build/
+# /ds35/mysqlds35/load/
+# /ds35/mysqlds35/web/
+# /ds35/oracleds35/
+# /ds35/oracleds35/build/
+# /ds35/oracleds35/load/
+# /ds35/oracleds35/web/
+# /ds35/sqlserverds35/
+# /ds35/sqlserverds35/build/
+# /ds35/sqlserverds35/load/
+# /ds35/sqlserverds35/web/
 
-#On Windows ds3 folder will be at <Driveletter>: and rest of folder structure will be same
+#On Windows ds35 folder will be at <Driveletter>: and rest of folder structure will be same
 
 
 #***************************************************************************************
@@ -415,6 +415,7 @@ print "$par1_Start $par2_End $par3_Fname $par4_DB_Size $par_Sys_Type \n";
 #We need to check which OS this perl script is being run
 if(lc($^O) eq lc("linux"))   #If system on which perl script is executing is Linux
 {
+	system("chmod 755 ds3_create_cust");
 	system("./ds3_create_cust $par1_Start $par2_End $par3_Fname $par4_DB_Size $par_Sys_Type");		
 }
 else   #Windows
@@ -491,6 +492,7 @@ for($i_LoopCount = 0; $i_LoopCount < 12; $i_LoopCount++)
 	
 	if(lc($^O) eq lc("linux"))   #If system on which perl script is executing is Linux
 	{
+		system("chmod 755 ds3_create_orders");
 		system("./ds3_create_orders $par1_Start $par2_End $par3_ArrMonth[$i_LoopCount] $par4_DB_Size $par5_Month_Number $par_Sys_Type $par_Max_Prod_Id $par_Max_Cust_Id");		
 	}
 	else   #Windows
@@ -521,6 +523,7 @@ print "\nCreating Inventory CSV file!!!! \n";
 
 if(lc($^O) eq lc("linux"))   #If system on which perl script is executing is Linux
 {
+	system("chmod 755 ds3_create_inv");
 	system("./ds3_create_inv $par_n_Prod $par_Sys_Type");
      system("cp inv.csv ../prod/");		
 }
@@ -554,6 +557,7 @@ print "\nCreating product CSV file!!!! \n";
 
 if(lc($^O) eq lc("linux"))   #If system on which perl script is executing is Linux
 {
+	system("chmod 755 ds3_create_prod");
 	system("./ds3_create_prod $par_n_Prod $par_Sys_Type");		
 }
 else   #Windows
@@ -581,6 +585,7 @@ print "\nCreating membership CSV file!!!! \n";
 
 if(lc($^O) eq lc("linux"))   #If system on which perl script is executing is Linux
 {
+	system("chmod 755 ds3_create_membership");
         system("./ds3_create_membership $i_Cust_Rows $par_Pct_Member $par_Sys_Type");
 }
 else   #Windows
@@ -610,6 +615,7 @@ my $par_review_rows = $par_n_Prod * $par_Avg_Reviews;
 
 if(lc($^O) eq lc("linux"))   #If system on which perl script is executing is Linux
 {
+	system("chmod 755 ds3_create_reviews");
         system("./ds3_create_reviews $par_n_Prod $par_Avg_Reviews $i_Cust_Rows $par_Sys_Type");
 }
 else   #Windows
@@ -637,7 +643,7 @@ $cust_row_plus_one = ($i_Cust_Rows + 1);
 
 if($bln_is_DB_MYSQL == 1)			#For MySQL
 {
-	chdir "../../mysqlds3/";			#Move to mysql directory
+	chdir "../../mysqlds35/";			#Move to mysql directory
 	chdir "./build/";					#Move to build directory inside mysql directory
 	
 	#Open a template file and replace placeholders in it and write new file
