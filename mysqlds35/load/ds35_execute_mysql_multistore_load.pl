@@ -74,18 +74,21 @@ if ("$^O" eq "linux")
 	my $cust_finished_file = "$base_dir/cust/finished$numberofstores.txt";
 	my $orders_finished_file = "$base_dir/orders/finished$numberofstores.txt";
 	my $reviews_finished_file = "$base_dir/reviews/finished$numberofstores.txt";
+	my $reviewshelp_finished_file = "$base_dir/reviews/finishedhelp$numberofstores.txt";
 	my $prod_finished_file = "$base_dir/prod/finished$numberofstores.txt";	
 	my $membership_finished_file = "$base_dir/membership/finished$numberofstores.txt";
 	
-	while ($num_finished < 5)
+	while ($num_finished < 6)
 		{
-		sleep(1);
+		sleep(5);
 		$num_finished =0;
 		if (-e $cust_finished_file) {++$num_finished;}
 		if (-e $orders_finished_file) {++$num_finished;}
 		if (-e $reviews_finished_file) {++$num_finished;}
+		if (-e $reviewshelp_finished_file) {++$num_finished;}
 		if (-e $prod_finished_file) {++$num_finished;}
 		if (-e $membership_finished_file) {++$num_finished;}
+		#print "current num_finished is $num_finished\n";
 		}
 	
 	print "Load finished at ".(localtime), "\n";
@@ -160,18 +163,21 @@ else         # Windows Version
 	my $cust_finished_file = "$base_dir\\cust\\finished$numberofstores.txt";
 	my $orders_finished_file = "$base_dir\\orders\\finished$numberofstores.txt";
 	my $reviews_finished_file = "$base_dir\\reviews\\finished$numberofstores.txt";
+	my $reviewshelp_finished_file = "$base_dir\\reviews\\finishedhelp$numberofstores.txt";
 	my $prod_finished_file = "$base_dir\\prod\\finished$numberofstores.txt";	
 	my $membership_finished_file = "$base_dir\\membership\\finished$numberofstores.txt";
 	
-	while ($num_finished < 5)
+	while ($num_finished < 6)
 		{
-		sleep(1);
+		sleep(5);
 		$num_finished =0;
 		if (-e $cust_finished_file) {++$num_finished;}
 		if (-e $orders_finished_file) {++$num_finished;}
 		if (-e $reviews_finished_file) {++$num_finished;}
+		if (-e $reviewshelp_finished_file) {++$num_finished;}
 		if (-e $prod_finished_file) {++$num_finished;}
 		if (-e $membership_finished_file) {++$num_finished;}
+		#print "current num_finished is $num_finished\n";
 		}
 	
 	print "Load finished at ".(localtime), "\n";

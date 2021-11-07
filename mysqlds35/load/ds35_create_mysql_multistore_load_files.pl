@@ -277,7 +277,7 @@ SET FOREIGN_KEY_CHECKS=1;\n";
 	close $OUT;
 	open (my $OUTBAT, ">remote_mysqlds3_reviewshelpful_load$k.bat") || die("Can't open remote_mysqlds3_reviewshelpful_load$k.bat");
 	print $OUTBAT "mysql -h $mysqltarget -u web --password=web --local_infile DS3 < remote_mysqlds3_reviewshelpful_load$k.sql\n";
-	#print $OUTBAT "$timecommand > finished$k.txt\n";
+	print $OUTBAT "$timecommand > finishedhelp$k.txt\n";
 	print $OUTBAT "exit\n";
 	close $OUTBAT;
 	sleep(.1);
