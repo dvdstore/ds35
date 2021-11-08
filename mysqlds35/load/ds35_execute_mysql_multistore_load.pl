@@ -6,7 +6,7 @@ use strict;
 use warnings;
 use Cwd qw(getcwd);
 
-my $oracletarget = $ARGV [0];
+my $mysqltarget = $ARGV [0];
 my $numberofstores = $ARGV[1];
 
 my $movecommand;
@@ -15,6 +15,8 @@ my $pathsep;
 my $pathsep2 = "\\\\";
 
 print "$^O\n";
+
+system ("mysql -h $mysqltarget -u web --password=web --local_infile DS3 < mysqlds35_disable_redo_log.sql");
 
 # This section enables support for Linux and Windows - detecting the type of OS, and then starting the executions in parallel 
 if ("$^O" eq "linux")
@@ -35,7 +37,6 @@ if ("$^O" eq "linux")
 	system ("rm -f reviews/finished*.txt");
 	
 	print "Load started at ".(localtime), "\n";
-
 
 	chdir("$base_dir/membership");
 	foreach my $k (1 .. $numberofstores){
@@ -195,6 +196,8 @@ else         # Windows Version
 	system ("del reviews\\finished*.txt");
 
 }  # End Windows version
+
+system ("mysql -h $mysqltarget -u web --password=web --local_infile DS3 < mysqlds35_enable_redo_log.sql");
 
 
 	
