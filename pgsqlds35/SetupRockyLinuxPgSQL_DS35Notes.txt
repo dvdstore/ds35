@@ -1,0 +1,232 @@
+Setup pgsql for PHP
+Setup notes for install of RockyLinux (the new CentOS) with postgresql 13 and DVDStore 3.5
+
+These setup notes inclue how to setup the PHP based web tier. The webtier is optional. Load can
+be driven directly against the database with the ds35pgsqldriver.exe. 
+
+Download RockLinux ISO - Rocky-8.4-x86_64-dvd1.iso
+
+Create VM 
+	16 vCPUs, 64 GB of RAM, 250 GB HD, VMxnet3 NIC
+	Note - disable secure boot in boot options of VM or else boot from Rocky Linux 8.4 ISO will fail
+	
+Mount ISO and boot VM
+Rocky Linux 8.4 Install
+	English
+	Time/Date - California 
+	root password - <your password>
+	create user = vmware - admin level, same password as root
+	custom partition - remove the /home mount, all space on / except for 25 GB swap and the boot partitions. Standard partition - xfs. Ended up with 223 for /
+	Ethernet - connected, dhcp, set hostname to rockyds3pgsql1
+	security policy - off
+	software selection - server with GUI, add performance tools, development tools, graphical admin tools, system tools
+	Begin Installation
+	
+	Reboot when finished
+	
+	Accept License when prompted after reboot
+	
+	Install finished - looks like centos :)
+	
+Disable firewall
+	systemctl stop firewalld
+	systemctl disable firewalld
+	
+Install Postgresql 13
+
+Install rpm repo
+	dnf install -y https://download.postgresql.org/pub/repos/yum/reporpms/EL-8-x86_64/pgdg-redhat-repo-latest.noarch.rpm
+		
+Disabled built in postgresql module
+	dnf -qy module disable postgresql
+	
+Actual Install
+	dnf install -y postgresql13-server
+		
+Initialize postgresql
+	/usr/pgsql-13/bin/postgresql-13-setup initdb
+	
+Start and set to start on boot
+	systemctl start postgresql-13
+	systemctl enable postgresql-13
+	
+Check status
+	systemctl status postgresql-13
+	
+	and
+	
+	netstat -antup | grep 5432
+	
+Set postgres password to ds3
+	su - postgres
+	psql
+	\password
+		- when prompted enter ds3
+	\q
+	exit (back to root user)
+	
+Edit postgresql configuration to allow remote access and for additional memory
+
+vim /var/lib/pgsql/13/data/postgresql.conf
+
+edit lines to look like this:
+	listen_addresses = '*'
+	max_connections = 1000
+	shared_buffers = 32GB
+	work_mem = 1GB
+	
+vim /var/lib/pgsql/13/data/pg_hba.conf
+# TYPE  DATABASE        USER            ADDRESS                 METHOD
+host    all             all             0.0.0.0/0               md5
+local 	all				all										md5
+host	all				all				127.0.0.1/0				md5
+
+Restart posgresql
+	systemctl restart postgresql-13
+	
+Verify remote access from another system with psql client installed
+	psql -h SERVER-IP -p 5432 -U postgres -W
+	
+Install pg_top - top for postgtres
+	yum install pg_top-13 or pg_top12 
+	
+	
+If using optinal web tier then setup apache:
+Install apache web server for web tier. Need php 7.4 or later 
+	yum install httpd httpd-devel
+	dnf module enable php:7.4
+	dnf module reset php
+	dnf install php
+	yum install php php-pgsql
+	systemctl start httpd
+	systemctl enable httpd
+After downloading the DVDStore, create a ds3 directory for the PHP pages
+	mkdir /var/www/html/ds3/  (or in whatever the default location for apahce is for you)
+Then copy the .php files from ds35/pgsqlds35/web/php7 to the new directory
+	
+	
+Reboot the Linux VM!!! - Do not skip this step
+	
+DS3.5 setup
+
+Download DVDStore 3.5 from github.com/dvdstore/ds35
+
+Either on a client system or on the host,
+If doing it on a windows client system you will also need to get psql client by downloading and installing postgresql 13 for windows
+A windows client will additionally need perl as well (ActivePerl is recommended)
+
+Run perl Install_DVDStore.pl
+	Select the size - 1 
+	Size metric - GB
+	DB Type - pgsql
+	OS of Target - Linux
+	
+Run pgsql_create_all.bat <IP address of pgsql server> <number of stores>
+
+Running the driver program
+
+The driver is written in c# and is a .net program. A precompiled version of the driver is included, which should work standalone.
+However, sometimes due to future version incompatibility, it is necessary to either recompile or run with the latest version of .net.
+In this case it is necessary to install .net.  At the time of this writing, version 5.0.2 was used.  Once .net is installed simply open
+a terminal session or windows command prompt to the ds35/pgsql/dotnet diretory and enter:
+	dotnet run
+	
+This will run the driver program with no parameters and will output all available parameters:
+Enter parameters with format --parm_name=parm_value
+And/or use a config file with argument --config_file=(config file path)
+Parms will be evaluated left to right
+
+Parameter Name      Description                                         Default Value
+
+config_file         config file path                                    none
+target              database/web server hostname or IP address          localhost
+n_threads           number of driver threads                            1
+ramp_rate           startup rate (users/sec)                            10
+run_time            run time (min) - 0 is infinite                      0
+db_size             S | M | L or database size (e.g. 30MB, 80GB)        10MB
+warmup_time         warmup_time (min)                                   1
+think_time          think time (sec)                                    0
+pct_newcustomers    percent of customers that are new customers         20
+pct_newmember       percent of orders with cust membership upgrade      1
+n_searches          average number of searches per order                3
+search_batch_size   average number of items returned in each search     5
+n_reviews           average number of product review searches per order 3
+pct_newreviews      percent of orders where customer creates a review   5
+pct_newhelpfulness  pct of orders where review helpfulness is rated     10
+n_line_items        average number of items per order                   5
+virt_dir            virtual directory (for web driver)                  ds3
+page_type           web page type (for web driver)                      php
+windows_perf_host   target hostname for Perfmon CPU% display (Windows only)
+linux_perf_host     username:password:target hostname/IP Address for Linux CPU% display (Linux Only)
+detailed_view       Detailed statistics View (Y / N)                    N
+out_filename        output results to specified file in csv format
+ds2_mode            run driver in ds2 mode to mimic previous version    N
+n_stores            Number of stores in DS3 instance                    1
+log_freq            print output frequency in seconds                   10
+log_timestamp       Detailed timestamp format for log (UTC / LOCAL / NONE) NONE
+
+Run from the command line example:
+
+C:\ds35\pgsqlds35>ds35pgsqldriver --target=10.10.10.10 --db_size=1GB --warmup_time=1 --run_time=2 --n_threads=5 --n_stores=10 --pct_newmember=0
+Total number of Threads to be Spawned across multiple servers are n_threads: 5
+target= 10.10.10.10  n_threads= 5  ramp_rate= 10  run_time= 2  db_size= 1GB  warmup_time= 1  think_time= 0 pct_newcustomers= 20 pct_newmembers= 0  n_searches= 3  search_batch_size= 5  n_reviews=3 pct_newreviews=5 pct_newhelpfulness=10 n_line_items5 virt_dir= ds3  page_type= php  windows_perf_host=  detailed_view= N linux_perf_host=  output_file=  ds2_mode= N  n_stores= 10 log_freq= 10 log_timestamp= NONE
+
+Using .NET DateTime for measuring response time
+
+Not generating Windows Performance Monitor Counters
+Thread 0: created for User 0
+Thread 1: created for User 1
+Thread 2: created for User 2
+Thread 3: created for User 3
+Thread 4: created for User 4
+Thread 3: connected to 10.10.10.10.10
+Controller (1/5/2022 5:57:10 PM): all threads running
+Controller: n_threads_connected = 1 : ConnectionTimeOut remaining 60
+Thread 1: connected to 10.10.10.10
+Controller: n_threads_connected = 2 : ConnectionTimeOut remaining 59
+Controller: n_threads_connected = 2 : ConnectionTimeOut remaining 58
+Controller: n_threads_connected = 2 : ConnectionTimeOut remaining 57
+Thread 4: connected to 10.10.10.10
+Controller: n_threads_connected = 3 : ConnectionTimeOut remaining 56
+Controller: n_threads_connected = 3 : ConnectionTimeOut remaining 55
+Thread 2: connected to 10.10.10.10
+Controller: n_threads_connected = 4 : ConnectionTimeOut remaining 54
+Thread 0: connected to 10.10.10.10
+Controller (1/5/2022 5:57:17 PM): all threads connected - issuing Start
+et=   10.0 n_overall=1167 opm=6997 rt_tot_lastn_max_msec=162 rt_tot_avg_msec=76 rt_tot_sampled=76 rollbacks: n=22 %=  1.9
+et=   20.0 n_overall=2448 opm=7337 rt_tot_lastn_max_msec=161 rt_tot_avg_msec=73 rt_tot_sampled=70 rollbacks: n=46 %=  1.9
+et=   30.0 n_overall=3737 opm=7467 rt_tot_lastn_max_msec=164 rt_tot_avg_msec=72 rt_tot_sampled=69 rollbacks: n=67 %=  1.8
+et=   40.0 n_overall=5036 opm=7546 rt_tot_lastn_max_msec=162 rt_tot_avg_msec=71 rt_tot_sampled=69 rollbacks: n=101 %=  2.0
+et=   50.0 n_overall=6351 opm=7613 rt_tot_lastn_max_msec=137 rt_tot_avg_msec=70 rt_tot_sampled=68 rollbacks: n=126 %=  2.0
+et=   60.1 n_overall=7646 opm=7638 rt_tot_lastn_max_msec=166 rt_tot_avg_msec=70 rt_tot_sampled=69 rollbacks: n=147 %=  1.9
+Stats reset
+et=   10.0 n_overall=1311 opm=7860 rt_tot_lastn_max_msec=164 rt_tot_avg_msec=68 rt_tot_sampled=68 rollbacks: n=21 %=  1.6
+et=   20.0 n_overall=2576 opm=7720 rt_tot_lastn_max_msec=135 rt_tot_avg_msec=70 rt_tot_sampled=71 rollbacks: n=46 %=  1.8
+et=   30.0 n_overall=3866 opm=7724 rt_tot_lastn_max_msec=139 rt_tot_avg_msec=70 rt_tot_sampled=69 rollbacks: n=61 %=  1.6
+et=   40.0 n_overall=5156 opm=7726 rt_tot_lastn_max_msec=138 rt_tot_avg_msec=69 rt_tot_sampled=69 rollbacks: n=80 %=  1.6
+et=   50.1 n_overall=6440 opm=7720 rt_tot_lastn_max_msec=161 rt_tot_avg_msec=70 rt_tot_sampled=70 rollbacks: n=98 %=  1.5
+et=   60.1 n_overall=7748 opm=7739 rt_tot_lastn_max_msec=158 rt_tot_avg_msec=69 rt_tot_sampled=68 rollbacks: n=121 %=  1.6
+et=   70.1 n_overall=9045 opm=7744 rt_tot_lastn_max_msec=161 rt_tot_avg_msec=69 rt_tot_sampled=69 rollbacks: n=142 %=  1.6
+et=   80.1 n_overall=10351 opm=7755 rt_tot_lastn_max_msec=157 rt_tot_avg_msec=69 rt_tot_sampled=69 rollbacks: n=158 %=  1.5
+et=   90.1 n_overall=11650 opm=7758 rt_tot_lastn_max_msec=160 rt_tot_avg_msec=69 rt_tot_sampled=69 rollbacks: n=174 %=  1.5
+et=  100.1 n_overall=12963 opm=7769 rt_tot_lastn_max_msec=161 rt_tot_avg_msec=69 rt_tot_sampled=68 rollbacks: n=195 %=  1.5
+et=  110.1 n_overall=14266 opm=7773 rt_tot_lastn_max_msec=161 rt_tot_avg_msec=69 rt_tot_sampled=69 rollbacks: n=223 %=  1.6
+et=  120.1 n_overall=15558 opm=7770 rt_tot_lastn_max_msec=163 rt_tot_avg_msec=69 rt_tot_sampled=70 rollbacks: n=240 %=  1.5
+
+Final (1/5/2022 6:00:17 PM): et=  120.1 n_overall=15558 opm=7770 rt_tot_lastn_max=163 rt_tot_avg=69 n_login_overall=12450 n_newcust_overall=3108 n_newmember_overall=0 n_browse_overall=46800 n_reviewbrowse=138724 n_newreviews=1206 n_newhelpfulness=2351 n_purchase_overall=15558 rt_login_avg_msec=0 rt_newcust_avg_msec=1 rt_rewmember_avg_msec=-2147483648 rt_browse_avg_msec=0 rt_reviewbrowse_avg_msec=5 rt_newreview_avg_msec=1 rt_newhelpfulness=1 rt_purchase_avg_msec=1 rt_tot_sampled=70 n_rollbacks_overall=240 rollback_rate =   1.5%
+
+Thread 1: exiting
+Thread 0: exiting
+Thread 2: exiting
+Thread 3: exiting
+Thread 4: exiting
+Controller (1/5/2022 6:00:18 PM): all threads stopped, exiting
+n_purchase_from_start= 23209 n_rollbacks_from_start= 387
+Run over
+
+C:\ds35\pgsqlds35>
+
+
+	
+	
+	
