@@ -62,7 +62,7 @@ if (empty($productid))
 if (!(empty($productid) OR empty($review_stars) OR empty($review_summary) OR empty($review_text)))
   {
   if (!($link_id=pg_connect($connstr))) die(pg_last_error());
-  $new_review_proc_call = "select new_prod_reviews$storenum( $productid, $review_stars, $customerid,'$review_summary','$review_text');";
+  $new_review_proc_call = "select new_prod_review$storenum( $productid, $review_stars, $customerid,'$review_summary','$review_text');";
   $result = pg_query($link_id,$new_review_proc_call);
   $row = pg_fetch_row($result);
   $reviewid = $row[0];
