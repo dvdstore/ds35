@@ -1,6 +1,5 @@
 # pgsqlds35_create_all.sh
 # must set PGPASSWORD environment variable to ds3
-set PGPASSWORD=ds3
 # Syntax to run - sh pgsqlds35_create_all.sh <psql_target> <number_of_stores>
 # start in ./ds35/pgsqlds35
 cd build/
