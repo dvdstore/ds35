@@ -1,5 +1,14 @@
 ds35_sqlserver_change_log.txt
 
+10/18/23: Added support for parallel loading. Multiple SQL Server db creation / load can be run 
+		in parallel becusae the loading scripts now create their own directories for 
+		staging all load scripts for each target.
+		Added new parameter --search_depth that allows for control of how "deep" the
+		query for browse reviews by title or actor will go.  Higher numbers will cause
+		deeper searches that will be better, but will cause more CPU usage.
+		Increased MAX_ROWS from 50 to 1000  in driver so that number of rows in a result
+		set can now be up to 1000.  This allows for the workload to be more network 
+		intensive if desired.
 
 6/24/19: Initial version of ds3.5 for SQL Server
 		Added support for multiple stores. Meaning a complete set of DS3 tables for the 

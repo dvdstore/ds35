@@ -1,6 +1,6 @@
-# oracleds3_perl_create_db_tables_multi.pl
-# Script to create a ds3 tables in oracle with a provided number of copies - supporting multiple stores
-# Syntax to run - perl oracleds3_perl_create_db_tables_multi.pl <oracle_target> <number_of_stores> 
+# sqlserverds35_perl_create_db_tables_multi.pl
+# Script to create a ds35 tables in sqlserver with a provided number of copies - supporting multiple stores
+# Syntax to run - perl sqlserverds35_perl_create_db_tables_multi.pl <sqlserver_target> <number_of_stores> 
 
 use strict;
 use warnings;
@@ -8,12 +8,18 @@ use warnings;
 my $sqlservertarget = $ARGV[0];
 my $numberofstores = $ARGV[1];
 
-#First call the script to prepare for the creation of the database - which will delete any existing DS3 database
+#Need seperate target directory so that mulitple DB Targets can be loaded at the same time
+my $sqlservertargetdir;  
 
-#system ("sqlplus \"sys/oracle\@$oracletarget as sysdba \" \@oracleds3_prep_create_db.sql"); 
+$sqlservertargetdir = $sqlservertarget;
+
+# remove any backslashes from string to be used for directory name
+$sqlservertargetdir =~ s/\\//;
+
+system ("mkdir $sqlservertargetdir");
 
 foreach my $k (1 .. $numberofstores){
-	open (my $OUT, ">sqlserverds3_createtables.sql") || die("Can't open sqlserverds3_createtables.sql");
+	open (my $OUT, ">$sqlservertargetdir\\sqlserverds35_createtables.sql") || die("Can't open sqlserverds35_createtables.sql");
 	print $OUT  "-- Tables
 USE DS3
 GO
@@ -213,7 +219,7 @@ GO
 \n";
   close $OUT;
   sleep(1);
-  print ("sqlcmd -S $sqlservertarget -U sa -P password -i sqlserverds3_createtables.sql");
-  system ("sqlcmd -S $sqlservertarget -U sa -P password -i sqlserverds3_createtables.sql");
-  #system ("del sqlserverds3_createtables.sql");
+  print ("sqlcmd -S $sqlservertarget -U sa -P password -i $sqlservertargetdir\\sqlserverds35_createtables.sql");
+  system ("sqlcmd -S $sqlservertarget -U sa -P password -i $sqlservertargetdir\\sqlserverds35_createtables.sql");
+  #system ("del $sqlservertargetdir\\sqlserverds35_createtables.sql");
   }

@@ -8,9 +8,18 @@ use warnings;
 my $sqlservertarget = $ARGV [0];
 my $numberofstores = $ARGV[1];
 
+my $sqlservertargetdir;
+
+$sqlservertargetdir = $sqlservertarget;
+
+# remove any backslashes from string to be used for directory name
+$sqlservertargetdir =~ s/\\//;
+
+system ("mkdir $sqlservertargetdir");
+
 
 foreach my $k (1 .. $numberofstores){
-	open (my $OUT, ">sqlserverds3_createindexes$k.sql") || die("Can't open sqlserverds3_indexes$k.sql");
+	open (my $OUT, ">$sqlservertargetdir\\sqlserverds35_createindexes$k.sql") || die("Can't open sqlserverds35_indexes$k.sql");
 	print $OUT "USE DS3
 GO
 
@@ -299,7 +308,7 @@ GO
 sleep(1);
   
 foreach my $k (1 .. ($numberofstores-1)){
-  system ("start sqlcmd -S $sqlservertarget -U sa -P password -i sqlserverds3_createindexes$k.sql");
+  system ("start sqlcmd -S $sqlservertarget -U sa -P password -i $sqlservertargetdir\\sqlserverds35_createindexes$k.sql");
   }
-  system ("sqlcmd -S $sqlservertarget -U sa -P password -i sqlserverds3_createindexes$numberofstores.sql");
+  system ("sqlcmd -S $sqlservertarget -U sa -P password -i $sqlservertargetdir\\sqlserverds35_createindexes$numberofstores.sql");
 sleep(180);    # Make sure that all indexes are created before finishing

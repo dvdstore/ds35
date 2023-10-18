@@ -204,11 +204,13 @@ namespace ds2xdriver
       Get_Prod_Reviews_By_Title = new SqlCommand("GET_PROD_REVIEWS_BY_TITLE" + target_store_number, objConn);
       Get_Prod_Reviews_By_Title.CommandType = CommandType.StoredProcedure;
       Get_Prod_Reviews_By_Title.Parameters.Add("@batch_size_in", SqlDbType.Int);
+	  Get_Prod_Reviews_By_Title.Parameters.Add("@search_depth_in", SqlDbType.Int);
       Get_Prod_Reviews_By_Title.Parameters.Add("@title_in", SqlDbType.VarChar, 50);
 
       Get_Prod_Reviews_By_Actor = new SqlCommand("GET_PROD_REVIEWS_BY_ACTOR" + target_store_number, objConn);
       Get_Prod_Reviews_By_Actor.CommandType = CommandType.StoredProcedure;
       Get_Prod_Reviews_By_Actor.Parameters.Add("@batch_size_in", SqlDbType.Int);
+	  Get_Prod_Reviews_By_Actor.Parameters.Add("@search_depth_in", SqlDbType.Int);
       Get_Prod_Reviews_By_Actor.Parameters.Add("@actor_in", SqlDbType.VarChar, 50);
 
 
@@ -457,7 +459,7 @@ namespace ds2xdriver
 //-------------------------------------------------------------------------------------------------
 // 
     public bool ds2browse(string browse_type_in, string browse_category_in, string browse_actor_in,
-      string browse_title_in, int batch_size_in, int customerid_out, ref int rows_returned, 
+      string browse_title_in, int batch_size_in, int search_depth_in, int customerid_out, ref int rows_returned, 
       ref int[] prod_id_out, ref string[] title_out, ref string[] actor_out, ref decimal[] price_out, 
       ref int[] special_out, ref int[] common_prod_id_out, ref double rt)
       {
@@ -554,7 +556,7 @@ namespace ds2xdriver
     // 
 
     public bool ds2browsereview(string browse_review_type_in, string get_review_category_in, string get_review_actor_in,
-      string get_review_title_in, int batch_size_in, int customerid_out, ref int rows_returned,
+      string get_review_title_in, int batch_size_in, int search_depth_in, int customerid_out, ref int rows_returned,
       ref int[] prod_id_out, ref string[] title_out, ref string[] actor_out, ref int[] review_id_out,
       ref string[] review_date_out, ref int[] review_stars_out, ref int[] review_customerid_out,
       ref string[] review_summary_out, ref string[] review_text_out, ref int[] review_helpfulness_sum_out, ref double rt)
@@ -575,11 +577,13 @@ namespace ds2xdriver
         {
             case "actor":
                 Get_Prod_Reviews_By_Actor.Parameters["@batch_size_in"].Value = batch_size_in;
+				Get_Prod_Reviews_By_Actor.Parameters["@search_depth_in"].Value = search_depth_in;
                 Get_Prod_Reviews_By_Actor.Parameters["@actor_in"].Value = "\"" + get_review_actor_in + "\"";
                 data_in = "\"" + get_review_actor_in + "\"";
                 break;
             case "title":
                 Get_Prod_Reviews_By_Title.Parameters["@batch_size_in"].Value = batch_size_in;
+				Get_Prod_Reviews_By_Title.Parameters["@search_depth_in"].Value = search_depth_in;
                 Get_Prod_Reviews_By_Title.Parameters["@title_in"].Value = "\"" + get_review_title_in + "\"";
                 data_in = "\"" + get_review_title_in + "\"";
                 break;

@@ -420,18 +420,22 @@ CREATE PROCEDURE GET_PROD_REVIEWS_BY_ACTOR$k
   )
 
   AS 
-  SET ROWCOUNT \@batch_size_in;
+ SET ROWCOUNT \@batch_size_in;  
 
   WITH T1 (title, actor, prod_id, review_date, stars, review_id, customerid, review_summary, review_text) 
-AS (SELECT TOP (\@search_depth_in) PRODUCTS$k.TITLE, PRODUCTS$k.ACTOR, PRODUCTS$k.PROD_ID, REVIEWS$k.REVIEW_DATE, REVIEWS$k.STARS, REVIEWS$k.REVIEW_ID,
-           REVIEWS$k.CUSTOMERID, REVIEWS$k.REVIEW_SUMMARY, REVIEWS$k.REVIEW_TEXT 
-    FROM PRODUCTS$k INNER JOIN REVIEWS$k on PRODUCTS$k.PROD_ID = REVIEWS$k.PROD_ID where CONTAINS (ACTOR, \@actor_in))
+AS (SELECT TOP (\@search_depth_in) TITLE, ACTOR, FT_TBL.PROD_ID, REVIEW_DATE, STARS, REVIEW_ID,
+			CUSTOMERID, REVIEW_SUMMARY, REVIEW_TEXT
+			FROM PRODUCTS$k as FT_TBL INNER JOIN
+			CONTAINSTABLE (PRODUCTS$k, ACTOR, \@actor_in) as KEY_TABLE 
+			ON FT_TBL.PROD_ID = KEY_TABLE.[KEY]
+			INNER JOIN REVIEWS$k
+			ON FT_TBL.PROD_ID = REVIEWS$k.PROD_ID )
 select T1.prod_id, T1.title, T1.actor, REVIEWS_HELPFULNESS$k.REVIEW_ID, T1.review_date, T1.stars, 
                     T1.customerid, T1.review_summary, T1.review_text, SUM(helpfulness) AS totalhelp from REVIEWS_HELPFULNESS$k 
                     inner join T1 on REVIEWS_HELPFULNESS$k.REVIEW_ID = T1.review_id
 					GROUP BY T1.REVIEW_ID, T1.prod_id, t1.title, t1.actor, REVIEWS_HELPFULNESS$k.REVIEW_ID, t1.review_date, t1.stars, t1.customerid, t1.review_summary, t1.review_text
 					ORDER BY totalhelp DESC;
-  SET ROWCOUNT 0
+  SET ROWCOUNT 0 
 GO
 
 -- get prod reviews by title
@@ -452,18 +456,22 @@ CREATE PROCEDURE GET_PROD_REVIEWS_BY_TITLE$k
   )
 
   AS 
-  SET ROWCOUNT \@batch_size_in;
+  SET ROWCOUNT \@batch_size_in; 
 
   WITH T1 (title, actor, prod_id, review_date, stars, review_id, customerid, review_summary, review_text) 
-AS (SELECT TOP (\@search_depth_in) PRODUCTS$k.TITLE, PRODUCTS$k.ACTOR, PRODUCTS$k.PROD_ID, REVIEWS$k.REVIEW_DATE, REVIEWS$k.STARS, REVIEWS$k.REVIEW_ID,
-           REVIEWS$k.CUSTOMERID, REVIEWS$k.REVIEW_SUMMARY, REVIEWS$k.REVIEW_TEXT 
-    FROM PRODUCTS$k INNER JOIN REVIEWS$k on PRODUCTS$k.PROD_ID = REVIEWS$k.PROD_ID where CONTAINS (TITLE, \@title_in))
+	AS (SELECT TOP (\@search_depth_in) TITLE, ACTOR, FT_TBL.PROD_ID, REVIEW_DATE, STARS, REVIEW_ID,
+			CUSTOMERID, REVIEW_SUMMARY, REVIEW_TEXT
+			FROM PRODUCTS1 as FT_TBL INNER JOIN
+			CONTAINSTABLE (PRODUCTS$k, TITLE, \@title_in) as KEY_TABLE 
+			ON FT_TBL.PROD_ID = KEY_TABLE.[KEY]
+			INNER JOIN REVIEWS$k
+			ON FT_TBL.PROD_ID = REVIEWS$k.PROD_ID )
 select T1.prod_id, T1.title, T1.actor, REVIEWS_HELPFULNESS$k.REVIEW_ID, T1.review_date, T1.stars, 
                     T1.customerid, T1.review_summary, T1.review_text, SUM(helpfulness) AS totalhelp from REVIEWS_HELPFULNESS$k 
                     inner join T1 on REVIEWS_HELPFULNESS$k.REVIEW_ID = T1.review_id
 					GROUP BY T1.REVIEW_ID, T1.prod_id, t1.title, t1.actor, REVIEWS_HELPFULNESS$k.REVIEW_ID, t1.review_date, t1.stars, t1.customerid, t1.review_summary, t1.review_text
 					ORDER BY totalhelp DESC;
-  SET ROWCOUNT 0
+  SET ROWCOUNT 0 
 GO
 
 
@@ -488,7 +496,9 @@ CREATE PROCEDURE BROWSE_BY_ACTOR$k
   AS 
 
   SET ROWCOUNT \@batch_size_in
-  SELECT * FROM PRODUCTS$k WITH(FORCESEEK) WHERE CONTAINS(ACTOR, \@actor_in)
+  SELECT PROD_ID,CATEGORY,TITLE,ACTOR,PRICE,SPECIAL,COMMON_PROD_ID,MEMBERSHIP_ITEM FROM PRODUCTS$k as FT_TBL INNER JOIN 
+  CONTAINSTABLE (PRODUCTS$k, ACTOR, \@actor_in, 10) AS KEY_TBL
+  ON FT_TBL.PROD_ID = KEY_TBL.[KEY];
   SET ROWCOUNT 0
 GO
 
@@ -509,7 +519,9 @@ CREATE PROCEDURE BROWSE_BY_TITLE$k
   AS 
 
   SET ROWCOUNT \@batch_size_in
-  SELECT * FROM PRODUCTS$k WITH(FORCESEEK) WHERE CONTAINS(TITLE, \@title_in)
+  SELECT PROD_ID,CATEGORY,TITLE,ACTOR,PRICE,SPECIAL,COMMON_PROD_ID,MEMBERSHIP_ITEM FROM PRODUCTS$k as FT_TBL INNER JOIN 
+  CONTAINSTABLE (PRODUCTS$k, TITLE, \@title_in, 10) AS KEY_TBL
+  ON FT_TBL.PROD_ID = KEY_TBL.[KEY];
   SET ROWCOUNT 0
 GO
 

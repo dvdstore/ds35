@@ -60,7 +60,7 @@ namespace ds2xdriver
     {
     public const int MAX_USERS = 1000;
     public const int MAX_CATEGORY = 16;
-    public const int MAX_ROWS = 100;
+    public const int MAX_ROWS = 1000;
     public const int LAST_N = 100;
     public const int MAX_FAILURES = 10;
     }
@@ -122,7 +122,7 @@ namespace ds2xdriver
     public static int[] arr_n_newmember_overall;
     public static double[] arr_rt_newmember_overall;
 
-    public static int pct_newcustomers = 0 , n_searches , search_batch_size , n_line_items , ramp_rate;
+    public static int pct_newcustomers = 0 , n_searches , search_batch_size, search_depth , n_line_items , ramp_rate;
     public static int pct_newreviews = 0, n_reviews;
     public static int pct_newhelpfulness = 0;
     public static int pct_newmember = 0;
@@ -168,6 +168,8 @@ namespace ds2xdriver
     public static bool ds2_mode = false;
     // Value for number of stores to support multi stores
     public static int n_stores = 1;
+	
+	
 
     // Variables needed within Controller class
     // Added new Parameter db_size by GSK
@@ -180,13 +182,13 @@ namespace ds2xdriver
     //Added new parameter linux_perf_host by GSK 
     static string[] input_parm_names = new string[] {"config_file", "target", "n_threads", "ramp_rate",
       "run_time", "db_size", "warmup_time", "think_time", "pct_newcustomers", "pct_newmember", "n_searches",
-      "search_batch_size", "n_reviews", "pct_newreviews", "pct_newhelpfulness", "n_line_items", "virt_dir", 
+      "search_batch_size", "search_depth", "n_reviews", "pct_newreviews", "pct_newhelpfulness", "n_line_items", "virt_dir", 
       "page_type", "windows_perf_host", "linux_perf_host", "detailed_view", "out_filename", "ds2_mode", "n_stores", "log_freq", "log_timestamp"};
     static string[] input_parm_desc = new string[] {"config file path", 
       "database/web server hostname or IP address", "number of driver threads", "startup rate (users/sec)",
       "run time (min) - 0 is infinite", "S | M | L or database size (e.g. 30MB, 80GB)", "warmup_time (min)", "think time (sec)", 
       "percent of customers that are new customers", "percent of orders with cust membership upgrade",
-      "average number of searches per order", "average number of items returned in each search", 
+      "average number of searches per order", "average number of items returned in each search", "max search query depth",
       "average number of product review searches per order", "percent of orders where customer creates a review",
       "pct of orders where review helpfulness is rated", "average number of items per order",
       "virtual directory (for web driver)", "web page type (for web driver)", "target hostname for Perfmon CPU% display (Windows only)",
@@ -195,7 +197,7 @@ namespace ds2xdriver
       "Number of stores in DS3 instance", "print output frequency in seconds",
 	  "Detailed timestamp format for log (UTC / LOCAL / NONE) "};
     static string[] input_parm_values = new string[] {"none", "localhost", "1", "10", "0", "10MB", "1", "0",
-      "20", "1", "3", "5", "3", "5", "10", "5", "ds3", "php", "","","N","","N","1", "10", "NONE"};
+      "20", "1", "3", "5", "500", "3", "5", "10", "5", "ds3", "php", "","","N","","N","1", "10", "NONE"};
 
     int server_id = 0;          //Added by GSK
     
@@ -738,6 +740,21 @@ namespace ds2xdriver
         Console.WriteLine ( "Error in converting parameter search_batch_size: {0}" , e.Message );
         return;
         }
+		try
+        {
+        search_depth = Convert.ToInt32 ( input_parm_values[Array.IndexOf ( input_parm_names ,
+          "search_depth" )] );
+        if ( search_depth <= 0 )
+          {
+          Console.WriteLine ( "search_depth must be greater than 0" );
+          return;
+          }
+        }
+      catch ( System.Exception e )
+        {
+        Console.WriteLine ( "Error in converting parameter search_depth: {0}" , e.Message );
+        return;
+        }
       try
         {
         n_line_items = Convert.ToInt32 ( input_parm_values[Array.IndexOf ( input_parm_names , "n_line_items" )] );
@@ -973,12 +990,12 @@ namespace ds2xdriver
       
       Console.WriteLine ( "target= {0}  n_threads= {1}  ramp_rate= {2}  run_time= {3}  db_size= {4}" +
         "  warmup_time= {5}  think_time= {6} pct_newcustomers= {7} pct_newmembers= {8}  n_searches= {9}  search_batch_size= {10}" +
-        "  n_reviews={11} pct_newreviews={12} pct_newhelpfulness={13} n_line_items{14} virt_dir= {15}" +
-        "  page_type= {16}  windows_perf_host= {17} detailed_view= {18} linux_perf_host= {19} output_file= {20} ds2_mode= {21}" +
-        "  n_stores= {22} log_freq= {23} log_timestamp= {24}"
+        "  search_depth= {11}  n_reviews={12} pct_newreviews={13} pct_newhelpfulness={14} n_line_items{15} virt_dir= {16}" +
+        "  page_type= {17}  windows_perf_host= {18} detailed_view= {19} linux_perf_host= {20} output_file= {21} ds2_mode= {22}" +
+        "  n_stores= {23} log_freq= {24} log_timestamp= {25}"
         ,
         target , n_threads , ramp_rate , run_time , db_size , warmup_time , think_time , pct_newcustomers ,
-            pct_newmember, n_searches , search_batch_size , n_reviews, pct_newreviews, pct_newhelpfulness,
+            pct_newmember, n_searches , search_batch_size , search_depth , n_reviews, pct_newreviews, pct_newhelpfulness,
             n_line_items , virt_dir , page_type , windows_perf_host , detailed_view , linux_perf_host, outfilename, 
             ds2_mode_string, n_stores, log_freq, log_timestamp);
 
@@ -2211,7 +2228,7 @@ namespace ds2xdriver
 
           failures = 0;
             while ( !ds2interfaces[Userid].ds2browse ( browse_type_in , browse_category_in , browse_actor_in ,
-            browse_title_in , batch_size_in , customerid_out , ref rows_returned , ref prod_id_out , ref title_out ,
+            browse_title_in , batch_size_in , Controller.search_depth , customerid_out , ref rows_returned , ref prod_id_out , ref title_out ,
             ref actor_out , ref price_out , ref special_out , ref common_prod_id_out , ref rt ) )
             {
             if (++failures < GlobalConstants.MAX_FAILURES)
@@ -2284,7 +2301,7 @@ namespace ds2xdriver
                 }
                 failures = 0;
                 while (!ds2interfaces[Userid].ds2browsereview(get_review_type_in, get_review_category_in, get_review_actor_in,
-                  get_review_title_in, batch_size_in, customerid_out, ref rows_returned, ref prod_id_out, ref title_out,
+                  get_review_title_in, batch_size_in, Controller.search_depth, customerid_out, ref rows_returned, ref prod_id_out, ref title_out,
                   ref actor_out, ref review_id_out, ref review_date_out, ref review_stars_out, ref review_customerid_out,
                   ref review_summary_out, ref review_text_out, ref review_helpfulness_sum_out, ref rt))
                   {
