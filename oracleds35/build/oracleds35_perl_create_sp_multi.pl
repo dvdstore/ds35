@@ -1,6 +1,6 @@
-# oracleds35_perl_create_sp_multi.pl
+# oracleds3_perl_create_sp_multi.pl
 # Script to create a ds3 stored procedures in oracle with a provided number of copies - supporting multiple stores
-# Syntax to run - perl oracleds35_perl_create_sp_multi.pl <oracle_target> <number_of_stores> 
+# Syntax to run - perl oracleds3_perl_create_sp_multi.pl <oracle_target> <number_of_stores> 
 
 use strict;
 use warnings;
@@ -8,9 +8,19 @@ use warnings;
 my $oracletarget = $ARGV [0];
 my $numberofstores = $ARGV[1];
 
+#Need seperate target directory so that mulitple DB Targets can be loaded at the same time
+my $oracletargetdir;  
+
+$oracletargetdir = $oracletarget;
+
+# remove any backslashes from string to be used for directory name
+$oracletargetdir =~ s/\\//;
+
+system ("mkdir $oracletargetdir");
+
 
 foreach my $k (1 .. $numberofstores){
-	open (my $OUT, ">oracleds35_createsp$k.sql") || die("Can't open oracleds35_createsp$k.sql");
+	open (my $OUT, ">$oracletargetdir\\oracleds35_createsp$k.sql") || die("Can't open oracleds35_createsp$k.sql");
 	print $OUT "CREATE GLOBAL TEMPORARY TABLE derivedtable1$k 
   ON COMMIT PRESERVE ROWS
   AS SELECT PRODUCTS$k.TITLE, PRODUCTS$k.ACTOR, PRODUCTS$k.PROD_ID, PRODUCTS$k.COMMON_PROD_ID
@@ -497,6 +507,7 @@ CREATE OR REPLACE  PROCEDURE \"DS3\".\"GET_PROD_REVIEWS_BY_DATE$k\"
 CREATE OR REPLACE  PROCEDURE \"DS3\".\"GET_PROD_REVIEWS_BY_ACTOR$k\"
   (
    batch_size                  IN INTEGER,
+   search_depth				   IN INTEGER DEFAULT 10,
    found                       OUT INTEGER,
    actor_in                    IN  VARCHAR2,
    title_out		       OUT DS3_TYPES.ARRAY_TYPE,
@@ -521,7 +532,7 @@ CREATE OR REPLACE  PROCEDURE \"DS3\".\"GET_PROD_REVIEWS_BY_ACTOR$k\"
 	WITH T1 AS 
           (SELECT PRODUCTS$k.TITLE, PRODUCTS$k.ACTOR, PRODUCTS$k.PROD_ID, REVIEWS$k.REVIEW_DATE, REVIEWS$k.STARS, REVIEWS$k.REVIEW_ID,
            REVIEWS$k.CUSTOMERID, REVIEWS$k.REVIEW_SUMMARY, REVIEWS$k.REVIEW_TEXT 
-           FROM PRODUCTS$k INNER JOIN REVIEWS$k on PRODUCTS$k.PROD_ID = REVIEWS$k.PROD_ID where CONTAINS (ACTOR, actor_in) > 0 AND ROWNUM<=10 )
+           FROM PRODUCTS$k INNER JOIN REVIEWS$k on PRODUCTS$k.PROD_ID = REVIEWS$k.PROD_ID where CONTAINS (ACTOR, actor_in) > 0 AND ROWNUM<= search_depth )
          select T1.title, T1.actor, T1.REVIEW_ID, T1.prod_id, T1.review_date, T1.stars, 
                 T1.customerid, T1.review_summary, T1.review_text, SUM(helpfulness) AS totalhelp from REVIEWS_HELPFULNESS$k 
          inner join T1 on REVIEWS_HELPFULNESS$k.REVIEW_ID = T1.review_id
@@ -549,6 +560,7 @@ CREATE OR REPLACE  PROCEDURE \"DS3\".\"GET_PROD_REVIEWS_BY_ACTOR$k\"
 CREATE OR REPLACE  PROCEDURE \"DS3\".\"GET_PROD_REVIEWS_BY_TITLE$k\"
   (
    batch_size                  IN INTEGER,
+   search_depth				   IN INTEGER DEFAULT 10,
    found                       OUT INTEGER,
    title_in                    IN  VARCHAR2,
    title_out                   OUT DS3_TYPES.ARRAY_TYPE,
@@ -573,7 +585,7 @@ CREATE OR REPLACE  PROCEDURE \"DS3\".\"GET_PROD_REVIEWS_BY_TITLE$k\"
 	WITH T1 AS
           (SELECT PRODUCTS$k.TITLE, PRODUCTS$k.ACTOR, PRODUCTS$k.PROD_ID, REVIEWS$k.REVIEW_DATE, REVIEWS$k.STARS, REVIEWS$k.REVIEW_ID,
            REVIEWS$k.CUSTOMERID, REVIEWS$k.REVIEW_SUMMARY, REVIEWS$k.REVIEW_TEXT
-           FROM PRODUCTS$k INNER JOIN REVIEWS$k on PRODUCTS$k.PROD_ID = REVIEWS$k.PROD_ID where CONTAINS (TITLE, title_in) > 0 AND ROWNUM<=10 )
+           FROM PRODUCTS$k INNER JOIN REVIEWS$k on PRODUCTS$k.PROD_ID = REVIEWS$k.PROD_ID where CONTAINS (TITLE, title_in) > 0 AND ROWNUM<= search_depth )
          select T1.title, T1.actor, T1.REVIEW_ID, T1.prod_id, T1.review_date, T1.stars,
                 T1.customerid, T1.review_summary, T1.review_text, SUM(helpfulness) AS totalhelp from REVIEWS_HELPFULNESS$k
          inner join T1 on REVIEWS_HELPFULNESS$k.REVIEW_ID = T1.review_id
@@ -890,7 +902,7 @@ exit;\n";
 sleep (1);
 
 foreach my $k (1 .. ($numberofstores-1)){
-  system ("start sqlplus \"ds3/ds3\@$oracletarget\" \@oracleds35_createsp$k.sql");
+  system ("start sqlplus \"ds3/ds3\@$oracletarget\" \@$oracletargetdir\\oracleds35_createsp$k.sql");
   }
-  system ("sqlplus \"ds3/ds3\@$oracletarget\" \@oracleds35_createsp$numberofstores.sql");
+  system ("sqlplus \"ds3/ds3\@$oracletarget\" \@$oracletargetdir\\oracleds35_createsp$numberofstores.sql");
 

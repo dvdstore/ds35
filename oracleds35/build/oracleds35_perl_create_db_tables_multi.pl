@@ -8,12 +8,22 @@ use warnings;
 my $oracletarget = $ARGV [0];
 my $numberofstores = $ARGV[1];
 
+#Need seperate target directory so that mulitple DB Targets can be loaded at the same time
+my $oracletargetdir;  
+
+$oracletargetdir = $oracletarget;
+
+# remove any backslashes from string to be used for directory name
+$oracletargetdir =~ s/\\//;
+
+system ("mkdir $oracletargetdir");
+
 #First call the script to prepare for the creation of the database - which will delete any existing DS3 database
 
 system ("sqlplus \"sys/oracle\@$oracletarget as sysdba \" \@oracleds35_prep_create_db.sql"); 
 
 foreach my $k (1 .. $numberofstores){
-	open (my $OUT, ">oracleds35_createtables.sql") || die("Can't open oracleds35_createtables.sql");
+	open (my $OUT, ">$oracletargetdir\\oracleds35_createtables.sql") || die("Can't open oracleds35_createtables.sql");
 	print $OUT "CREATE TABLE \"DS3\".\"CUSTOMERS$k\"
   (
   \"CUSTOMERID\" NUMBER NOT NULL, 
@@ -251,7 +261,7 @@ CREATE SEQUENCE \"DS3\".\"ORDERID_SEQ$k\"
   \n";
   close $OUT;
   sleep(1);
-  system ("sqlplus \"sys/oracle\@$oracletarget as sysdba \" \@oracleds35_createtables.sql");
+  system ("sqlplus \"sys/oracle\@$oracletarget as sysdba \" \@$oracletargetdir\\oracleds35_createtables.sql");
   #system ("del oracleds35_createtables.sql");
   }
 

@@ -1,6 +1,6 @@
 # oracleds3_perl_create_seq_multi.pl
 # Script to analyze all DS3 tables and indexes - supporting multiple stores
-# Syntax to run - perl oracleds35_perl_analyze_all_multi.pl <oracle_target> <number_of_stores> 
+# Syntax to run - perl oracleds3_perl_analyze_all_multi.pl <oracle_target> <number_of_stores> 
 
 use strict;
 use warnings;
@@ -8,9 +8,18 @@ use warnings;
 my $oracletarget = $ARGV [0];
 my $numberofstores = $ARGV[1];
 
+#Need seperate target directory so that mulitple DB Targets can be loaded at the same time
+my $oracletargetdir;  
+
+$oracletargetdir = $oracletarget;
+
+# remove any backslashes from string to be used for directory name
+$oracletargetdir =~ s/\\//;
+
+system ("mkdir $oracletargetdir");
 
 foreach my $k (1 .. $numberofstores){
-	open (my $OUT, ">oracleds35_analyzeall$k.sql") || die("Can't open oracleds35_analyzeall$k.sql");
+	open (my $OUT, ">$oracletargetdir\\oracleds35_analyzeall$k.sql") || die("Can't open oracleds35_analyzeall$k.sql");
 	print $OUT "declare
 begin
 dbms_stats.gather_table_stats(ownname=> 'DS3', tabname=> 'CATEGORIES$k', partname=> NULL );
@@ -57,6 +66,6 @@ close $OUT;
 sleep(1);
 
 foreach my $k (1 .. ($numberofstores-1)){
-  system ("start sqlplus \"ds3/ds3\@$oracletarget \" \@oracleds35_analyzeall$k.sql");
+  system ("start sqlplus \"ds3/ds3\@$oracletarget \" \@$oracletargetdir\\oracleds35_analyzeall$k.sql");
   }
-  system ("sqlplus \"ds3/ds3\@$oracletarget \" \@oracleds35_analyzeall$numberofstores.sql");
+  system ("sqlplus \"ds3/ds3\@$oracletarget \" \@$oracletargetdir\\oracleds35_analyzeall$numberofstores.sql");

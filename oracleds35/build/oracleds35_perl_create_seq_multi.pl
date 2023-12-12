@@ -1,6 +1,6 @@
-# oracleds35_perl_create_seq_multi.pl
+# oracleds3_perl_create_seq_multi.pl
 # Script to create a DS3 sequences script that will create seqences for Reviews and Reviews Helpfulness tables - supporting multiple stores
-# Syntax to run - perl oracleds35_perl_create_seq_multi.pl <oracle_target> <number_of_stores> 
+# Syntax to run - perl oracleds3_perl_create_seq_multi.pl <oracle_target> <number_of_stores> 
 
 use strict;
 use warnings;
@@ -8,9 +8,19 @@ use warnings;
 my $oracletarget = $ARGV [0];
 my $numberofstores = $ARGV[1];
 
+#Need seperate target directory so that mulitple DB Targets can be loaded at the same time
+my $oracletargetdir;  
+
+$oracletargetdir = $oracletarget;
+
+# remove any backslashes from string to be used for directory name
+$oracletargetdir =~ s/\\//;
+
+system ("mkdir $oracletargetdir");
+
 
 foreach my $k (1 .. $numberofstores){
-	open (my $OUT, ">oracleds35_createseq$k.sql") || die("Can't open oracleds35_createseq$k.sql");
+	open (my $OUT, ">$oracletargetdir\\oracleds35_createseq$k.sql") || die("Can't open oracleds35_createseq$k.sql");
 	print $OUT "DECLARE 
   REVIEW_ROWS$k NUMBER;
   HELP_ROWS$k NUMBER;
@@ -57,6 +67,6 @@ close $OUT;
 sleep(1);
 
 foreach my $k (1 .. ($numberofstores-1)){
-  system ("start sqlplus \"sys/oracle\@$oracletarget as sysdba \" \@oracleds35_createseq$k.sql");
+  system ("start sqlplus \"sys/oracle\@$oracletarget as sysdba \" \@$oracletargetdir\\oracleds35_createseq$k.sql");
   }
-  system ("sqlplus \"sys/oracle\@$oracletarget as sysdba \" \@oracleds35_createseq$numberofstores.sql");
+  system ("sqlplus \"sys/oracle\@$oracletarget as sysdba \" \@$oracletargetdir\\oracleds35_createseq$numberofstores.sql");

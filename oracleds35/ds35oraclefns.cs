@@ -69,8 +69,8 @@ namespace ds2xdriver
 
     OracleParameter[] New_Member_prm = new OracleParameter[3];
     OracleParameter[] Get_Prod_Reviews_prm = new OracleParameter[3];
-    OracleParameter[] Get_Prod_Reviews_By_Actor_prm = new OracleParameter[3];
-    OracleParameter[] Get_Prod_Reviews_By_Title_prm = new OracleParameter[3];
+    OracleParameter[] Get_Prod_Reviews_By_Actor_prm = new OracleParameter[4];
+    OracleParameter[] Get_Prod_Reviews_By_Title_prm = new OracleParameter[4];
     OracleParameter[] Get_Prod_Reviews_By_Date_prm = new OracleParameter[3];
     OracleParameter[] Get_Prod_Reviews_By_Stars_prm = new OracleParameter[4];
     OracleParameter[] New_Prod_Review_prm = new OracleParameter[6];
@@ -707,9 +707,11 @@ namespace ds2xdriver
 
       Get_Prod_Reviews_By_Title_prm[0] =
         Get_Prod_Reviews_By_Title.Parameters.Add("batch_size", OracleDbType.Int32, ParameterDirection.Input);
-      Get_Prod_Reviews_By_Title_prm[1] =
-        Get_Prod_Reviews_By_Title.Parameters.Add("found", OracleDbType.Int32, ParameterDirection.Output);
+	  Get_Prod_Reviews_By_Title_prm[1] =
+        Get_Prod_Reviews_By_Title.Parameters.Add("search_depth", OracleDbType.Int32, ParameterDirection.Input);
       Get_Prod_Reviews_By_Title_prm[2] =
+        Get_Prod_Reviews_By_Title.Parameters.Add("found", OracleDbType.Int32, ParameterDirection.Output);
+      Get_Prod_Reviews_By_Title_prm[3] =
         Get_Prod_Reviews_By_Title.Parameters.Add("title_in", OracleDbType.Varchar2, ParameterDirection.Input);
 
       Get_Prod_Reviews_By_Title_title_out =
@@ -791,8 +793,10 @@ namespace ds2xdriver
       Get_Prod_Reviews_By_Actor_prm[0] =
         Get_Prod_Reviews_By_Actor.Parameters.Add("batch_size", OracleDbType.Int32, ParameterDirection.Input);
       Get_Prod_Reviews_By_Actor_prm[1] =
+        Get_Prod_Reviews_By_Actor.Parameters.Add("search_depth", OracleDbType.Int32, ParameterDirection.Input);
+	  Get_Prod_Reviews_By_Actor_prm[2] =
         Get_Prod_Reviews_By_Actor.Parameters.Add("found", OracleDbType.Int32, ParameterDirection.Output);
-      Get_Prod_Reviews_By_Actor_prm[2] =
+      Get_Prod_Reviews_By_Actor_prm[3] =
         Get_Prod_Reviews_By_Actor.Parameters.Add("actor_in", OracleDbType.Varchar2, ParameterDirection.Input);
 
       Get_Prod_Reviews_By_Actor_title_out =
@@ -1139,7 +1143,7 @@ namespace ds2xdriver
 
 
     public bool ds2browse(string browse_type_in, string browse_category_in, string browse_actor_in,
-      string browse_title_in, int batch_size_in, int customerid_out, ref int rows_returned, 
+      string browse_title_in, int batch_size_in, int search_depth_in, int customerid_out, ref int rows_returned, 
       ref int[] prod_id_out, ref string[] title_out, ref string[] actor_out, ref decimal[] price_out, 
       ref int[] special_out, ref int[] common_prod_id_out, ref double rt)
       {
@@ -1309,7 +1313,7 @@ namespace ds2xdriver
 // 
       
     public bool ds2browsereview(string browse_review_type_in, string get_review_category_in, string get_review_actor_in,
-      string get_review_title_in, int batch_size_in, int customerid_out, ref int rows_returned,
+      string get_review_title_in, int batch_size_in, int search_depth_in, int customerid_out, ref int rows_returned,
       ref int[] prod_id_out, ref string[] title_out, ref string[] actor_out, ref int[] review_id_out,
       ref string[] review_date_out, ref int[] review_stars_out,ref int[] review_customerid_out,
       ref string[]review_summary_out, ref string[]review_text_out, ref int[]review_helpfulness_sum_out, ref double rt)
@@ -1329,12 +1333,14 @@ namespace ds2xdriver
         {
             case "actor":
                 Get_Prod_Reviews_By_Actor_prm[0].Value = batch_size_in;
-                Get_Prod_Reviews_By_Actor_prm[2].Value = get_review_actor_in;
+				Get_Prod_Reviews_By_Actor_prm[1].Value = search_depth_in;
+                Get_Prod_Reviews_By_Actor_prm[3].Value = get_review_actor_in;
                 data_in = get_review_actor_in;
                 break;
             case "title":
                 Get_Prod_Reviews_By_Title_prm[0].Value = batch_size_in;
-                Get_Prod_Reviews_By_Title_prm[2].Value = get_review_title_in;
+				Get_Prod_Reviews_By_Title_prm[1].Value = search_depth_in;
+                Get_Prod_Reviews_By_Title_prm[3].Value = get_review_title_in;
                 data_in = get_review_title_in;
                 break;
         }
@@ -1355,7 +1361,7 @@ namespace ds2xdriver
             {
                 case "actor":
                     Get_Prod_Reviews_By_Actor.ExecuteNonQuery();
-                    rows_returned = Convert.ToInt32(Get_Prod_Reviews_By_Actor_prm[1].Value.ToString());
+                    rows_returned = Convert.ToInt32(Get_Prod_Reviews_By_Actor_prm[2].Value.ToString());
                     for (i = 0; i < rows_returned; i++)
                     {
                         o_review_id_out[i] = Convert.ToInt32(((Get_Prod_Reviews_By_Actor_review_id_out.Value as Array).GetValue(i)).ToString());
@@ -1372,7 +1378,7 @@ namespace ds2xdriver
                     break;
                 case "title":
                     Get_Prod_Reviews_By_Title.ExecuteNonQuery();
-                    rows_returned = Convert.ToInt32(Get_Prod_Reviews_By_Title_prm[1].Value.ToString());
+                    rows_returned = Convert.ToInt32(Get_Prod_Reviews_By_Title_prm[2].Value.ToString());
                     for (i = 0; i < rows_returned; i++)
                     {
                         o_review_id_out[i] = Convert.ToInt32(((Get_Prod_Reviews_By_Title_review_id_out.Value as Array).GetValue(i)).ToString());
