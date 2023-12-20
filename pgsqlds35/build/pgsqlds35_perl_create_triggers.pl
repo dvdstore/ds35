@@ -7,10 +7,19 @@ my $DBNAME = "ds3";
 my $SYSDBA = "ds3";
 my $PGPASSWORD = "ds3";
 
+#Need seperate target directory so that mulitple DB Targets can be loaded at the same time
+my $pgsql_targetdir;  
+
+$pgsql_targetdir = $pgsql_target;
+
+# remove any backslashes from string to be used for directory name
+$pgsql_targetdir =~ s/\\//;
+
+system ("mkdir $pgsql_targetdir");
 
 
 foreach my $k (1 .. $numStores){
-        open(my $OUT, ">pgsqlds35_createtriggers.sql") || die("Can't open pgsqlds35_createtriggers.sql");
+        open(my $OUT, ">$pgsql_targetdir\\pgsqlds35_createtriggers.sql") || die("Can't open pgsqlds35_createtriggers.sql");
         print $OUT "-- Triggers
 
 \\c ds3;
@@ -53,8 +62,8 @@ EXECUTE PROCEDURE  RESTOCK_ORDER$k();
 
 close $OUT;
         sleep(1);
-        print("psql -h $pgsql_target -U $SYSDBA -d $DBNAME < pgsqlds35_createtriggers.sql\n");
-        system("psql -h $pgsql_target -U $SYSDBA -d $DBNAME < pgsqlds35_createtriggers.sql");
+        print("psql -h $pgsql_target -U $SYSDBA -d $DBNAME < $pgsql_targetdir\\pgsqlds35_createtriggers.sql\n");
+        system("psql -h $pgsql_target -U $SYSDBA -d $DBNAME < $pgsql_targetdir\\pgsqlds35_createtriggers.sql");
 }
 
 

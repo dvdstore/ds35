@@ -11,8 +11,18 @@ my $PGPASSWORD = "ds3";
 my $DBNAME = "ds3";
 my $SYSDBA = "ds3";
 
+#Need seperate target directory so that mulitple DB Targets can be loaded at the same time
+my $pgsql_targetdir;  
+
+$pgsql_targetdir = $pgsql_target;
+
+# remove any backslashes from string to be used for directory name
+$pgsql_targetdir =~ s/\\//;
+
+system ("mkdir $pgsql_targetdir");
+
 foreach my $k (1 .. $numStores){
-	open(my $OUT, ">pgsqlds35_createsp.sql") || die("Can't open pgsqlds35_createsp.sql");
+	open(my $OUT, ">$pgsql_targetdir\\pgsqlds35_createsp.sql") || die("Can't open pgsqlds35_createsp.sql");
 	print $OUT "
 \\c $DBNAME;
 
@@ -481,6 +491,7 @@ CREATE OR REPLACE FUNCTION get_prod_reviews_by_date$k
   CREATE OR REPLACE FUNCTION get_prod_reviews_by_actor$k
   (
    IN batch_size_in INT,
+   IN search_depth_in INT,
    IN actor_in TEXT
   )
   RETURNS TABLE (r_prod_id int, r_title text, r_actor text, r_review_id int, r_review_date date, r_stars smallint,
@@ -495,7 +506,7 @@ CREATE OR REPLACE FUNCTION get_prod_reviews_by_date$k
         RETURN QUERY
     WITH T1 AS (SELECT PRODUCTS$k.TITLE, PRODUCTS$k.ACTOR, PRODUCTS$k.PROD_ID, REVIEWS$k.REVIEW_DATE, REVIEWS$k.STARS, REVIEWS$k.REVIEW_ID,
            REVIEWS$k.CUSTOMERID, REVIEWS$k.REVIEW_SUMMARY, REVIEWS$k.REVIEW_TEXT
-           FROM PRODUCTS$k INNER JOIN REVIEWS$k on PRODUCTS$k.PROD_ID = REVIEWS$k.PROD_ID where to_tsvector('simple',ACTOR) \@\@ to_tsquery(vector_in) limit 500)
+           FROM PRODUCTS$k INNER JOIN REVIEWS$k on PRODUCTS$k.PROD_ID = REVIEWS$k.PROD_ID where to_tsvector('simple',ACTOR) \@\@ to_tsquery(vector_in) limit search_depth_in)
     select T1.prod_id, T1.title, T1.actor, REVIEWS_HELPFULNESS$k.REVIEW_ID, T1.review_date, T1.stars,
            T1.customerid, T1.review_summary, T1.review_text, SUM(helpfulness) AS totalhelp from REVIEWS_HELPFULNESS$k
            inner join T1 on REVIEWS_HELPFULNESS$k.REVIEW_ID = T1.review_id
@@ -508,6 +519,7 @@ CREATE OR REPLACE FUNCTION get_prod_reviews_by_date$k
 CREATE OR REPLACE FUNCTION get_prod_reviews_by_title$k
   (
    IN batch_size_in INT,
+   IN search_depth_in INT,
    IN title_in TEXT
    )
    RETURNS TABLE (r_prod_id int, r_title text, r_actor text, r_review_id int, r_review_date date, r_stars smallint,
@@ -522,7 +534,7 @@ CREATE OR REPLACE FUNCTION get_prod_reviews_by_title$k
         RETURN QUERY
     WITH T1 AS (SELECT PRODUCTS$k.TITLE, PRODUCTS$k.ACTOR, PRODUCTS$k.PROD_ID, REVIEWS$k.REVIEW_DATE, REVIEWS$k.STARS, REVIEWS$k.REVIEW_ID,
            REVIEWS$k.CUSTOMERID, REVIEWS$k.REVIEW_SUMMARY, REVIEWS$k.REVIEW_TEXT
-           FROM PRODUCTS$k INNER JOIN REVIEWS$k on PRODUCTS$k.PROD_ID = REVIEWS$k.PROD_ID where to_tsvector('simple',TITLE) \@\@ to_tsquery(vector_in) limit 500)
+           FROM PRODUCTS$k INNER JOIN REVIEWS$k on PRODUCTS$k.PROD_ID = REVIEWS$k.PROD_ID where to_tsvector('simple',TITLE) \@\@ to_tsquery(vector_in) limit search_depth_in)
     select T1.prod_id, T1.title, T1.actor, REVIEWS_HELPFULNESS$k.REVIEW_ID, T1.review_date, T1.stars,
            T1.customerid, T1.review_summary, T1.review_text, SUM(helpfulness) AS totalhelp from REVIEWS_HELPFULNESS$k
            inner join T1 on REVIEWS_HELPFULNESS$k.REVIEW_ID = T1.review_id
@@ -536,6 +548,6 @@ CREATE OR REPLACE FUNCTION get_prod_reviews_by_title$k
 \n";
 	close $OUT;
 	sleep(1);
-	print("psql -h $pgsql_target -U $SYSDBA -d $DBNAME < pgsqlds35_createsp.sql\n");
-        system("psql -h $pgsql_target -U $SYSDBA -d $DBNAME < pgsqlds35_createsp.sql");
+	print("psql -h $pgsql_target -U $SYSDBA -d $DBNAME < $pgsql_targetdir\\pgsqlds35_createsp.sql\n");
+        system("psql -h $pgsql_target -U $SYSDBA -d $DBNAME < $pgsql_targetdir\\pgsqlds35_createsp.sql");
 }

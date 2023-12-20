@@ -2124,10 +2124,10 @@ namespace ds2xdriver
               }
               
 
-            if (customerid_out == 0)
-            {
-                Console.WriteLine("User name {0} already exists", username_in);
-            }
+            //if (customerid_out == 0)
+            //{
+            //    Console.WriteLine("User name {0} already exists", username_in);
+            //}
             if (customerid_out == -1)
             {
                 Console.WriteLine("New Customer - DB didn't return value for new customerid, retrying... ");
@@ -2170,7 +2170,7 @@ namespace ds2xdriver
   	            }
               }
 
-            if ( customerid_out == 0 ) Console.WriteLine ( "Customer {0} is already a member" , customerid_in );
+           // if ( customerid_out == 0 ) Console.WriteLine ( "Customer {0} is already a member" , customerid_in );
             } while ( customerid_out == 0 ); // end of do/while try newcustomer
 
 //        Console.WriteLine("Thread {0}: New user {1} logged in, customerid = {2}, RT= {3,10:F3}", 
