@@ -35,6 +35,7 @@ $storenum = $_REQUEST["storenum"];
 $review_title = isset($_REQUEST["review_title"]) ? $_REQUEST["review_title"] : NULL;
 $review_actor = isset($_REQUEST["review_actor"]) ? $_REQUEST["review_actor"] : NULL;
 $limit_num = isset($_REQUEST["limit_num"]) ? $_REQUEST["limit_num"] : NULL;
+$search_depth = isset($_REQUEST["search_depth"]) ? $_REQUEST["search_depth"] : 500;
 $browsereviewtype = isset($_REQUEST["browsereviewtype"]) ? $_REQUEST["browsereviewtype"] : NULL;
 $productid = isset($_REQUEST["productid"]) ? $_REQUEST["productid"] : NULL;
 // $selected_item = $_REQUEST["selected_item"];
@@ -80,10 +81,10 @@ if (!empty($browsereviewtype))
   switch ($browsereviewtype)
     {
     case "title":
-      $browsereview_query ="select * from get_prod_reviews_by_title$storenum ($limit_num,'$review_title');";
+      $browsereview_query ="select * from get_prod_reviews_by_title$storenum ($limit_num,$search_depth,'$review_title');";
       break;
     case "actor":
-      $browsereview_query ="select * from get_prod_reviews_by_actor$storenum ($limit_num, '$review_actor');";
+      $browsereview_query ="select * from get_prod_reviews_by_actor$storenum ($limit_num,$search_depth,'$review_actor');";
       break;
     }
 
