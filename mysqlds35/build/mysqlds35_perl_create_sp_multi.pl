@@ -8,8 +8,18 @@ use warnings;
 my $mysqltarget = $ARGV[0];
 my $numberofstores = $ARGV[1];
 
+#Need seperate target directory so that mulitple DB Targets can be loaded at the same time
+my $mysql_targetdir;  
+
+$mysql_targetdir = $mysqltarget;
+
+# remove any backslashes from string to be used for directory name
+$mysql_targetdir =~ s/\\//;
+
+system ("mkdir $mysql_targetdir");
+
 foreach my $k (1 .. $numberofstores){
-	open (my $OUT, ">mysqlds35_createsp.sql") || die("Can't open mysqlds35_createsp.sql");
+	open (my $OUT, ">$mysql_targetdir\\mysqlds35_createsp.sql") || die("Can't open $mysql_targetdir\\mysqlds35_createsp.sql");
 	print $OUT  "Delimiter $$
 DROP PROCEDURE IF EXISTS DS3.NEW_CUSTOMER$k $$
 CREATE PROCEDURE DS3.NEW_CUSTOMER$k ( IN firstname_in varchar(50), IN lastname_in varchar(50), IN address1_in varchar(50), IN address2_in varchar(50), IN city_in varchar(50), IN state_in varchar(50), IN zip_in int, IN country_in varchar(50), IN region_in int, IN email_in varchar(50), IN phone_in varchar(50), IN creditcardtype_in int, IN creditcard_in varchar(50), IN creditcardexpiration_in varchar(50), IN username_in varchar(50), IN password_in varchar(50), IN age_in int, IN income_in int, IN gender_in varchar(1), OUT customerid_out INT)
@@ -159,7 +169,7 @@ END; $$
 \n";
   close $OUT;
   sleep(1);
-  print ("mysql -h $mysqltarget -u web --password=web < mysqlds35_createsp.sql");
-  system ("mysql -h $mysqltarget -u web --password=web < mysqlds35_createsp.sql");
-  #system ("del mysqlds35_createsp.sql");
+  print ("mysql -h $mysqltarget -u web --password=web < $mysql_targetdir\\mysqlds35_createsp.sql");
+  system ("mysql -h $mysqltarget -u web --password=web < $mysql_targetdir\\mysqlds35_createsp.sql");
+  #system ("del $mysql_targetdir\\mysqlds35_createsp.sql");
   }

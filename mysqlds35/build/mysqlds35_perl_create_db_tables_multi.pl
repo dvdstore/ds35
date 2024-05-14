@@ -8,12 +8,22 @@ use warnings;
 my $mysqltarget = $ARGV[0];
 my $numberofstores = $ARGV[1];
 
+#Need seperate target directory so that mulitple DB Targets can be loaded at the same time
+my $mysql_targetdir;  
+
+$mysql_targetdir = $mysqltarget;
+
+# remove any backslashes from string to be used for directory name
+$mysql_targetdir =~ s/\\//;
+
+system ("mkdir $mysql_targetdir");
+
 #First call the script to prepare for the creation of the database - which will delete any existing DS3 database
 
 system ("mysql -h $mysqltarget -u web --password=web < mysqlds35_prep_create_db.sql"); 
 
 foreach my $k (1 .. $numberofstores){
-	open (my $OUT, ">mysqlds35_createtables.sql") || die("Can't open mysqlds35_createtables.sql");
+	open (my $OUT, ">$mysql_targetdir\\mysqlds35_createtables.sql") || die("Can't open $mysql_targetdir\\mysqlds35_createtables.sql");
 	print $OUT  "-- Tables
 USE DS3;
 
@@ -162,7 +172,7 @@ CREATE TABLE REORDER$k
 \n";
   close $OUT;
   sleep(1);
-  print ("mysql -h $mysqltarget -u web --password=web < mysqlds35_createtables.sql");
-  system ("mysql -h $mysqltarget -u web --password=web < mysqlds35_createtables.sql");
-  #system ("del mysqlds35_createtables.sql");
+  print ("mysql -h $mysqltarget -u web --password=web < $mysql_targetdir\\mysqlds35_createtables.sql");
+  system ("mysql -h $mysqltarget -u web --password=web < $mysql_targetdir\\mysqlds35_createtables.sql");
+  #system ("del $mysql_targetdir\\mysqlds35_createtables.sql");
   }

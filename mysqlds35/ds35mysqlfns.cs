@@ -423,7 +423,7 @@ namespace ds2xdriver
 //-------------------------------------------------------------------------------------------------
 // 
     public bool ds2browse(string browse_type_in, string browse_category_in, string browse_actor_in,
-      string browse_title_in, int batch_size_in, int customerid_out, ref int rows_returned, 
+      string browse_title_in, int batch_size_in, int search_depth_in, int customerid_out, ref int rows_returned, 
       ref int[] prod_id_out, ref string[] title_out, ref string[] actor_out, ref decimal[] price_out, 
       ref int[] special_out, ref int[] common_prod_id_out, ref double rt)
       {
@@ -516,7 +516,7 @@ namespace ds2xdriver
     // 
 
     public bool ds2browsereview(string browse_review_type_in, string get_review_category_in, string get_review_actor_in,
-      string get_review_title_in, int batch_size_in, int customerid_out, ref int rows_returned,
+      string get_review_title_in, int batch_size_in, int search_depth_in, int customerid_out, ref int rows_returned,
       ref int[] prod_id_out, ref string[] title_out, ref string[] actor_out, ref int[] review_id_out,
       ref string[] review_date_out, ref int[] review_stars_out, ref int[] review_customerid_out,
       ref string[] review_summary_out, ref string[] review_text_out, ref int[] review_helpfulness_sum_out, ref double rt)
@@ -542,7 +542,7 @@ namespace ds2xdriver
                     "REVIEWS" + target_store_number + ".review_id, REVIEWS" + target_store_number + ".customerid, REVIEWS" + target_store_number + ".review_summary, REVIEWS" + target_store_number + ".review_text  " +
                     "from PRODUCTS" + target_store_number + " inner join REVIEWS" + target_store_number + " on PRODUCTS" + target_store_number + ".prod_id = REVIEWS" + target_store_number + ".prod_id " + 
                   //  "where MATCH (ACTOR) AGAINST ('" + get_review_actor_in + "') GROUP BY TITLE limit 10) " +
-                   "where MATCH (ACTOR) AGAINST ('" + get_review_actor_in + "') limit 500) " +
+                   "where MATCH (ACTOR) AGAINST ('" + get_review_actor_in + "') limit " + search_depth_in + ") " +
                     "as T1 on REVIEWS_HELPFULNESS" + target_store_number + ".REVIEW_ID = T1.review_id GROUP BY REVIEW_ID ORDER BY totalhelp DESC limit 10;";
                 data_in = get_review_actor_in;
                 break;
@@ -553,7 +553,7 @@ namespace ds2xdriver
                     "REVIEWS" + target_store_number + ".review_id, REVIEWS" + target_store_number + ".customerid, REVIEWS" + target_store_number + ".review_summary, REVIEWS" + target_store_number + ".review_text  " +
                     "from PRODUCTS" + target_store_number + " inner join REVIEWS" + target_store_number + " on PRODUCTS" + target_store_number + ".prod_id = REVIEWS" + target_store_number + ".prod_id " +
                   //  "where MATCH (TITLE) AGAINST ('" + get_review_title_in + "') GROUP BY TITLE limit 10) " +
-                    "where MATCH (TITLE) AGAINST ('" + get_review_title_in + "') limit 500) " +
+                    "where MATCH (TITLE) AGAINST ('" + get_review_title_in + "') limit " + search_depth_in + ") " +
                     "as T1 on REVIEWS_HELPFULNESS" + target_store_number + ".REVIEW_ID = T1.review_id GROUP BY REVIEW_ID ORDER BY totalhelp DESC limit 10;";
                 data_in = get_review_title_in;
                 break;

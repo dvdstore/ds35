@@ -655,7 +655,7 @@ if($bln_is_DB_MYSQL == 1)			#For MySQL
 	@lines = ();
 	$line = "";
 	$str_file_name = "";
-	open (FILE, "mysqlds3_cleanup_generic_template.sql") || die "Can not Open file : $!";	
+	open (FILE, "mysqlds35_cleanup_generic_template.sql") || die "Can not Open file : $!";	
 	@lines =  <FILE>;
 	close (FILE);
 	foreach $line (@lines)
