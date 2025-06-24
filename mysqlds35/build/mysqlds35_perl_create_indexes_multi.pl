@@ -8,6 +8,8 @@ use warnings;
 my $mysqltarget = $ARGV[0];
 my $numberofstores = $ARGV[1];
 
+my $pathsep; 
+
 #Need seperate target directory so that mulitple DB Targets can be loaded at the same time
 my $mysql_targetdir;  
 
@@ -23,14 +25,10 @@ print "$^O\n";
 # This section enables support for Linux and Windows - detecting the type of OS, and then using the proper commands
 if ("$^O" eq "linux")
         {
-        $movecommand = "mv";
-        $timecommand = "date";
         $pathsep = "/";
         }
 else
         {
-        $movecommand = "move";
-        $timecommand = "time /T";
         $pathsep = "\\\\";
         };
 

@@ -109,10 +109,9 @@ if ("$^O" eq "linux")
 	
 	print "Load finished at ".(localtime), "\n";
 
-	sleep(30);
+	sleep(10);
 
 	# Delete the finishedxx.txt files
-
 
 	chdir ("$base_dir");
 	system ("rm -f cust/$mysql_targetdir/finished*.txt");
@@ -211,7 +210,6 @@ else         # Windows Version
 
 	# Delete the finishedxx.txt files
 
-
 	chdir ("$base_dir");
 	system ("del cust\\$mysql_targetdir\\finished*.txt");
 	system ("del orders\\$mysql_targetdir\\finished*.txt");
@@ -222,8 +220,3 @@ else         # Windows Version
 }  # End Windows version
 
 system ("mysql -h $mysqltarget -u web --password=web --local_infile DS3 < mysqlds35_enable_redo_log.sql");
-
-
-	
-	
-	

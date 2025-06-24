@@ -8,6 +8,8 @@ use warnings;
 my $mysqltarget = $ARGV[0];
 my $numberofstores = $ARGV[1];
 
+my $pathsep;
+
 #Need seperate target directory so that mulitple DB Targets can be loaded at the same time
 my $mysql_targetdir;  
 
@@ -23,14 +25,10 @@ print "$^O\n";
 # This section enables support for Linux and Windows - detecting the type of OS, and then using the proper commands
 if ("$^O" eq "linux")
         {
-        $movecommand = "mv";
-        $timecommand = "date";
         $pathsep = "/";
         }
 else
         {
-        $movecommand = "move";
-        $timecommand = "time /T";
         $pathsep = "\\\\";
         };
 
@@ -39,7 +37,7 @@ else
 system ("mysql -h $mysqltarget -u web --password=web < mysqlds35_prep_create_db.sql"); 
 
 foreach my $k (1 .. $numberofstores){
-	open (my $OUT, ">$mysql_targetdir${pathsep}mysqlds35_createtables.sql") || die("Can't open $mysql_targetdir{pathsep}mysqlds35_createtables.sql");
+	open (my $OUT, ">$mysql_targetdir${pathsep}mysqlds35_createtables.sql") || die("Can't open $mysql_targetdir${pathsep}mysqlds35_createtables.sql");
 	print $OUT  "-- Tables
 USE DS3;
 
@@ -188,7 +186,7 @@ CREATE TABLE REORDER$k
 \n";
   close $OUT;
   sleep(1);
-  print ("mysql -h $mysqltarget -u web --password=web < $mysql_targetdir{pathsep}mysqlds35_createtables.sql");
-  system ("mysql -h $mysqltarget -u web --password=web < $mysql_targetdir{pathsep}mysqlds35_createtables.sql");
-  #system ("del $mysql_targetdir{pathsep}mysqlds35_createtables.sql");
+  print ("mysql -h $mysqltarget -u web --password=web < $mysql_targetdir${pathsep}mysqlds35_createtables.sql");
+  system ("mysql -h $mysqltarget -u web --password=web < $mysql_targetdir${pathsep}mysqlds35_createtables.sql");
+  #system ("del $mysql_targetdir${pathsep}mysqlds35_createtables.sql");
   }
