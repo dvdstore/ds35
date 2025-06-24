@@ -21,12 +21,6 @@ $mysql_targetdir = $mysqltarget;
 # remove any backslashes from string to be used for directory name
 $mysql_targetdir =~ s/\\//;
 
-system ("mkdir cust\\$mysql_targetdir");
-system ("mkdir orders\\$mysql_targetdir");
-system ("mkdir reviews\\$mysql_targetdir");
-system ("mkdir prod\\$mysql_targetdir");
-system ("mkdir membership\\$mysql_targetdir");
-
 print "$^O\n";
 
 # This section enables support for Linux and Windows - detecting the type of OS, and then using the proper commands 
@@ -43,7 +37,11 @@ else
         $pathsep = "\\\\";
 	};
 
-
+system ("mkdir cust${pathsep}$mysql_targetdir");
+system ("mkdir orders${pathsep}$mysql_targetdir");
+system ("mkdir reviews${pathsep}$mysql_targetdir");
+system ("mkdir prod${pathsep}$mysql_targetdir");
+system ("mkdir membership${pathsep}$mysql_targetdir");
 
 #customers 
 
