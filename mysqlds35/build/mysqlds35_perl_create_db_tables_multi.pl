@@ -18,7 +18,7 @@ $mysql_targetdir = $mysqltarget;
 # remove any backslashes from string to be used for directory name
 $mysql_targetdir =~ s/\\//;
 
-system ("mkdir $mysql_targetdir");
+system ("mkdir -p $mysql_targetdir");
 
 print "$^O\n";
 
@@ -186,7 +186,7 @@ CREATE TABLE REORDER$k
 \n";
   close $OUT;
   sleep(1);
-  print ("mysql -h $mysqltarget -u web --password=web < $mysql_targetdir${pathsep}mysqlds35_createtables.sql");
+  print ("mysql -h $mysqltarget -u web --password=web < $mysql_targetdir${pathsep}mysqlds35_createtables.sql\n");
   system ("mysql -h $mysqltarget -u web --password=web < $mysql_targetdir${pathsep}mysqlds35_createtables.sql");
   #system ("del $mysql_targetdir${pathsep}mysqlds35_createtables.sql");
   }

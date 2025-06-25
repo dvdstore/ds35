@@ -48,6 +48,6 @@ END; $$
   close $OUT;
   sleep(1);
   print ("mysql -h $mysqltarget -u web --password=web < $mysql_targetdir${pathsep}mysqlds35_create_trigger.sql\n");
-  system ("mysql -h $mysqltarget -u web --password=web < $mysql_targetdir${pathsep}mysqlds35_create_trigger.sql\n");
+  system ("mysql -h $mysqltarget -u web --password=web < $mysql_targetdir${pathsep}mysqlds35_create_trigger.sql");
   #system ("del $mysql_targetdir${pathsep}mysqlds35_create_trigger.sql");
   }

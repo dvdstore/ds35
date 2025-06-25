@@ -37,11 +37,12 @@ else
         $pathsep = "\\\\";
 	};
 
-system ("mkdir cust${pathsep}$mysql_targetdir");
-system ("mkdir orders${pathsep}$mysql_targetdir");
-system ("mkdir reviews${pathsep}$mysql_targetdir");
-system ("mkdir prod${pathsep}$mysql_targetdir");
-system ("mkdir membership${pathsep}$mysql_targetdir");
+# mkdir -p so it doesn't complain if the directory already exists
+system ("mkdir -p cust${pathsep}$mysql_targetdir");
+system ("mkdir -p orders${pathsep}$mysql_targetdir");
+system ("mkdir -p reviews${pathsep}$mysql_targetdir");
+system ("mkdir -p prod${pathsep}$mysql_targetdir");
+system ("mkdir -p membership${pathsep}$mysql_targetdir");
 
 #customers 
 
