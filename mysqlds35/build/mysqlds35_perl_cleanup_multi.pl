@@ -162,6 +162,7 @@ delete from ORDERLINES$k where ORDERID > $i_Ord_Rows;
 delete from CUST_HIST$k where ORDERID > $i_Ord_Rows;
 delete from REVIEWS$k where REVIEW_ID > $i_Review_Rows;
 delete from REVIEWS_HELPFULNESS$k where REVIEW_ID > $i_Review_Rows;
+delete from REORDER$k;
 
 alter table REVIEWS$k ENABLE KEYS;
 alter table REVIEWS_HELPFULNESS$k ENABLE KEYS;
