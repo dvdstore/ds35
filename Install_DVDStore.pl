@@ -17,12 +17,12 @@ use strict;
 
 #Here We are assuming default values for 10mb small SQL Server Database instance on Windows
 #Though user can specify any valid value  
-my $database_size = 10;					#Database Size
-my $database_size_str = "mb";   		#String to indicate size: MB / GB or mb / gb
-my $database_type = "mssql";    		#Type = mssql / mysql / pgsql / oracle / MSSQL / MYSQL / ORACLE /PGSQL
-my $db_sys_type = "win";   				#System : win / linux / WIN / LINUX
-my $db_file_path = "c:/";				#User can give any path to store DBFiles
-										# For windows : Path should be C:\sqldbfiles\
+my $database_size = 10;			#Database Size
+my $database_size_str = "mb";		#String to indicate size: MB / GB or mb / gb
+my $database_type = "mssql";		#Type = mssql / mysql / pgsql / oracle / MSSQL / MYSQL / ORACLE /PGSQL
+my $db_sys_type = "win";		#System : win / linux / WIN / LINUX
+my $db_file_path = "c:/";		#User can give any path to store DBFiles
+					# For windows : Path should be C:\sqldbfiles\
 my @arr_db_file_paths = ();
 my @arr1_db_file_paths = ();
 
@@ -47,20 +47,57 @@ my $bln_is_DB_ORACLE = 0;
 my $str_is_Small_DB = "";
 my $str_is_Medium_DB = "";
 my $str_is_Large_DB = "";
-my $str_file_name = "";				#Store name of file to be created from template 
+my $str_file_name = "";				#Store name of file to be created from template
 
 
-print "Please enter following parameters: \n";
-print "***********************************\n";
-print "Please enter database size (integer expected) : "; 
-chomp($database_size = <STDIN>);
-print "Please enter whether above database size is in (MB / GB) : ";
-chomp($database_size_str = <STDIN>);
-print "Please enter database type (MSSQL / MYSQL / PGSQL / ORACLE) : ";
-chomp($database_type = <STDIN>); 
-print "Please enter system type on which DB Server is installed (WIN / LINUX) : ";
-chomp($db_sys_type = <STDIN>);
-print "***********************************\n";
+if(lc($^O) eq lc("linux"))   #If system on which perl script is executing is Linux
+{
+	my $default_db= "";
+
+	if (-e "/opt/mssql") {
+		$default_db="MSSQL";
+	}
+	elsif (-e "/usr/bin/postgresql-setup") {
+		$default_db="PGSQL";
+	}
+	elsif (-e "/ora") {
+		$default_db="ORACLE";
+	}
+	else {
+		$default_db="MYSQL";
+	}
+
+	print "Please enter following parameters: \n";
+	print "***********************************\n";
+	print "Please enter database size (integer expected) [4] : ";
+	chomp($database_size = <STDIN>);
+	$database_size ||= "4";
+	print "Please enter whether above database size is in (MB / GB) [GB] : ";
+	chomp($database_size_str = <STDIN>);
+	$database_size_str ||= "GB";
+	print "Please enter database type (MSSQL / MYSQL / PGSQL / ORACLE) [$default_db] : ";
+	chomp($database_type = <STDIN>);
+	$database_type ||= $default_db;
+	print "Please enter system type on which DB Server is installed (WIN / LINUX) [LINUX] : ";
+	chomp($db_sys_type = <STDIN>);
+	$db_sys_type ||= "LINUX";
+	print "***********************************\n";
+}
+else
+{
+	print "Please enter following parameters: \n";
+	print "***********************************\n";
+	print "Please enter database size (integer expected) : ";
+	chomp($database_size = <STDIN>);
+	print "Please enter whether above database size is in (MB / GB) : ";
+	chomp($database_size_str = <STDIN>);
+	print "Please enter database type (MSSQL / MYSQL / PGSQL / ORACLE) : ";
+	chomp($database_type = <STDIN>);
+	print "Please enter system type on which DB Server is installed (WIN / LINUX) : ";
+	chomp($db_sys_type = <STDIN>);
+	print "***********************************\n";
+}
+
 #***************************************************************************************
 
 #Set the flags according to parameters passed. These flags will be used further
@@ -673,8 +710,8 @@ if($bln_is_DB_MYSQL == 1)			#For MySQL
 }
 elsif($bln_is_DB_PGSQL == 1)			#For PGSQL
 {
-	chdir "../../pgsqlds2/";			#Move to postgres directory
-	chdir "./build/";					#Move to build directory inside postgres directory
+	chdir "../../pgsqlds35/";		#Move to postgres directory
+	chdir "./build/";			#Move to build directory inside postgres directory
 	
 	#Open a template file and replace placeholders in it and write new file
 
@@ -685,7 +722,7 @@ elsif($bln_is_DB_PGSQL == 1)			#For PGSQL
 	@lines = ();
 	$line = "";
 	$str_file_name = "";
-	open (FILE, "pgsqlds2_cleanup_generic_template.sql") || die "Can not Open file : $!";	
+	open (FILE, "pgsqlds35_cleanup_generic_template.sql") || die "Can not Open file : $!";
 	@lines =  <FILE>;
 	close (FILE);
 	foreach $line (@lines)
@@ -693,7 +730,7 @@ elsif($bln_is_DB_PGSQL == 1)			#For PGSQL
 		$line =~ s/{CUST_ROW}/$i_Cust_Rows/g;
 		$line =~ s/{ORD_ROW}/$ord_row/g;
 	}	
-	$str_file_name = "pgsqlds2_cleanup_".$database_size.$database_size_str.".sql";
+	$str_file_name = "pgsqlds35_cleanup_".$database_size.$database_size_str.".sql";
 	open (NEWFILE, ">" , $str_file_name) || die "Creating new file to write failed : $!";
 	print NEWFILE @lines;
 	close (NEWFILE);
