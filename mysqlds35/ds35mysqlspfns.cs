@@ -619,12 +619,12 @@ namespace ds2xdriver
         catch (MySqlException e)
         {
             Console.WriteLine("Thread {0}: MySQL Error in Get Product Reviews: {1}", Thread.CurrentThread.Name, e.Message);
-            return (false);
+            success = false;
         }
         catch (System.Exception e)
         {
             Console.WriteLine("Thread {0}: System Error in Get Product Reviews: {1}", Thread.CurrentThread.Name, e.Message);
-            return (false);
+            success = false;
         }
 
 #if (USE_WIN32_TIMER)
@@ -635,7 +635,7 @@ namespace ds2xdriver
       rt = TS.TotalSeconds; // Calculate response time
 #endif
                        
-      return (true);
+      return (success);
     } // end ds2getreview()
 
 //
