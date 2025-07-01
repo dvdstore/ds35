@@ -580,7 +580,7 @@ namespace ds2xdriver
                 title_out[i_row] = Rdr.GetString(1);
                 actor_out[i_row] = Rdr.GetString(2);
                 review_id_out[i_row] = Rdr.GetInt32(3);
-                review_date_out[i_row] = Rdr.GetString(4);
+                review_date_out[i_row] = Rdr.GetDateTime(4).ToString();
                 review_stars_out[i_row] = Rdr.GetInt32(5);
                 review_customerid_out[i_row] = Rdr.GetInt32(6);
                 review_summary_out[i_row] = Rdr.GetString(7);
@@ -670,7 +670,7 @@ namespace ds2xdriver
             {
                 review_id_out[i_row] = Rdr.GetInt32(0);
                 prod_id_out[i_row] = Rdr.GetInt32(1);
-                review_date_out[i_row] = Rdr.GetString(2);
+                review_date_out[i_row] = Rdr.GetDateTime(2).ToString();
                 review_stars_out[i_row] = Rdr.GetInt32(3);
                 review_customerid_out[i_row] = Rdr.GetInt32(4);
                 review_summary_out[i_row] = Rdr.GetString(5);
