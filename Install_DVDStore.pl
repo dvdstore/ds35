@@ -1040,6 +1040,28 @@ elsif($bln_is_DB_MSSQL == 1) 		#For SQL Server
 	print NEWFILE @lines;
 	close (NEWFILE);
 	
+        @lines = ();
+        $line = "";
+        $str_file_name = "";
+        open (FILE, "sqlserverds35_create_all_concurrent_generic_template.sh") || die "Can not Open file : $!";
+        @lines =  <FILE>;
+        close (FILE);
+        my $i_Cnt = 0;
+        my $i_arrCnt = scalar(@arr_db_file_paths);
+        my $i_LastIndex = ($i_arrCnt - 1);
+        foreach $line (@lines)
+        {
+                if($line =~ m/{DB_SIZE}/)
+                {
+                        $line =~ s/{DB_SIZE}/$database_size$database_size_str/g;
+                        $i_Cnt = ($i_Cnt + 1);
+                }
+        }
+        $str_file_name = "sqlserverds35_create_all_concurrent_".$database_size.$database_size_str.".sh";
+        open (NEWFILE, ">", $str_file_name) || die "Creating new file to write failed : $!";
+        print NEWFILE @lines;
+        close (NEWFILE);
+
 	print "\nCompleted creating and writing build scripts for SQL Server database!!\n";
 }
 

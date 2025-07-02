@@ -1,12 +1,13 @@
 # sqlserverds35_perl_create_db_tables_multi.pl
 # Script to create a ds35 tables in sqlserver with a provided number of copies - supporting multiple stores
-# Syntax to run - perl sqlserverds35_perl_create_db_tables_multi.pl <sqlserver_target> <number_of_stores> 
+# Syntax to run - perl sqlserverds35_perl_create_db_tables_multi.pl <sqlserver_target> <sqlserver_password> <number_of_stores> 
 
 use strict;
 use warnings;
 
 my $sqlservertarget = $ARGV[0];
-my $numberofstores = $ARGV[1];
+my $mypassword = $ARGV[1];
+my $numberofstores = $ARGV[2];
 
 #Need seperate target directory so that mulitple DB Targets can be loaded at the same time
 my $sqlservertargetdir;  
@@ -16,10 +17,22 @@ $sqlservertargetdir = $sqlservertarget;
 # remove any backslashes from string to be used for directory name
 $sqlservertargetdir =~ s/\\//;
 
-system ("mkdir $sqlservertargetdir");
+my $pathsep;
+
+# This section enables support for Linux and Windows - detecting the type of OS, and then using the proper commands
+if ("$^O" eq "linux")
+        {
+        $pathsep = "/";
+        }
+else
+        {
+        $pathsep = "\\\\";
+        };
+
+system ("mkdir -p $sqlservertargetdir");
 
 foreach my $k (1 .. $numberofstores){
-	open (my $OUT, ">$sqlservertargetdir\\sqlserverds35_createtables.sql") || die("Can't open sqlserverds35_createtables.sql");
+	open (my $OUT, ">$sqlservertargetdir${pathsep}sqlserverds35_createtables.sql") || die("Can't open sqlserverds35_createtables.sql");
 	print $OUT  "-- Tables
 USE DS3
 GO
@@ -219,7 +232,7 @@ GO
 \n";
   close $OUT;
   sleep(1);
-  print ("sqlcmd -S $sqlservertarget -U sa -P password -i $sqlservertargetdir\\sqlserverds35_createtables.sql");
-  system ("sqlcmd -S $sqlservertarget -U sa -P password -i $sqlservertargetdir\\sqlserverds35_createtables.sql");
-  #system ("del $sqlservertargetdir\\sqlserverds35_createtables.sql");
+  print ("sqlcmd -C -S $sqlservertarget -U sa -P $mypassword -i $sqlservertargetdir${pathsep}sqlserverds35_createtables.sql\n");
+  system ("sqlcmd -C -S $sqlservertarget -U sa -P $mypassword -i $sqlservertargetdir${pathsep}sqlserverds35_createtables.sql");
+  #system ("del $sqlservertargetdir${pathsep}sqlserverds35_createtables.sql");
   }
