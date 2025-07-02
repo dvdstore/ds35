@@ -1,13 +1,13 @@
 # sqlserverds35_perl_create_db_tables_multi.pl
 # Script to create a ds35 tables in sqlserver with a provided number of copies - supporting multiple stores
-# Syntax to run - perl sqlserverds35_perl_create_db_tables_multi.pl <sqlserver_target> <sqlserver_password> <number_of_stores> 
+# Syntax to run - perl sqlserverds35_perl_create_db_tables_multi.pl <sqlserver_target> <number_of_stores> <sqlserver_password>
 
 use strict;
 use warnings;
 
 my $sqlservertarget = $ARGV[0];
-my $mypassword = $ARGV[1];
-my $numberofstores = $ARGV[2];
+my $numberofstores = $ARGV[1];
+my $mypassword = $ARGV[2] || 'password';
 
 #Need seperate target directory so that mulitple DB Targets can be loaded at the same time
 my $sqlservertargetdir;  

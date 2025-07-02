@@ -1,13 +1,13 @@
 # sqlserverds3_perl_create_sp_multi.pl
 # Script to create a ds3 stored procedures in sql server with a provided number of copies - supporting multiple stores
-# Syntax to run - perl sqlserverds3_perl_create_sp_multi.pl <sqlserver_target> <password> <number_of_stores> 
+# Syntax to run - perl sqlserverds3_perl_create_sp_multi.pl <sqlserver_target> <number_of_stores> <password>
 
 use strict;
 use warnings;
 
 my $sqlservertarget = $ARGV [0];
-my $password = $ARGV[1];
-my $numberofstores = $ARGV[2];
+my $numberofstores = $ARGV[1];
+my $password = $ARGV[2] || 'password';
 
 my $sqlservertargetdir;
 

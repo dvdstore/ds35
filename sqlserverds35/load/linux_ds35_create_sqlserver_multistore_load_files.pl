@@ -1,14 +1,14 @@
 # ds35_create_osqlserver_multistore_ctl_files.pl
 # Script to create a set of ds35 sqlserver load files for a given number of stores
-# Syntax to run - perl ds35_create_sqlserver_multistore_load_files.pl <sqlserver_target> <password> <number_of_stores> 
+# Syntax to run - perl ds35_create_sqlserver_multistore_load_files.pl <sqlserver_target> <number_of_stores> <password>
 
 use strict;
 use warnings;
 use Cwd qw(getcwd);
 
 my $sqlservertarget = $ARGV[0];
-my $password = $ARGV[1];
-my $numberofstores = $ARGV[2];
+my $numberofstores = $ARGV[1];
+my $password = $ARGV[2] || 'password';
 
 my $sqlservertargetdir;
 
