@@ -134,8 +134,8 @@ foreach my $k (1 .. $numberofstores){
 #reviews
 foreach my $k (1 .. $numberofstores){
 	open (my $OUT, ">reviews/$sqlservertargetdir/remote_sqlserverds35_reviews_load$k.sh") || die("Can't open remote_sqlserverds35_reviews_load$k.sh");
-	print $OUT "bcp ds3..reviews$k in ../../../../data_files/reviews/reviews.csv -b 10000 -h TABLOCK -S $sqlservertarget -U sa -P $password -c -t ,> reviews$k.log\n"; 
-	print $OUT "bcp ds3..reviews_helpfulness$k in ../../../../data_files/reviews/review_helpfulness.csv -b 10000 -h TABLOCK -S $sqlservertarget -U sa -P $password -c -t ,> review_helpfulness$k.log\n"; 
+	print $OUT "bcp ds3..reviews$k in ../../../../data_files/reviews/reviews.csv -b 10000 -h TABLOCK -S $sqlservertarget -u -U sa -P $password -c -t ,> reviews$k.log\n";
+	print $OUT "bcp ds3..reviews_helpfulness$k in ../../../../data_files/reviews/review_helpfulness.csv -b 10000 -h TABLOCK -S $sqlservertarget -u -U sa -P $password -c -t ,> review_helpfulness$k.log\n";
 	print $OUT "date > finished$k.txt\n";
 	print $OUT "exit\n";
 	close $OUT;
