@@ -963,8 +963,9 @@ namespace ds2xdriver
       try
       {
           ds2_mode_string = input_parm_values[Array.IndexOf(input_parm_names, "ds2_mode")];
-          if (ds2_mode_string == "Y")
+          if (ds2_mode_string.ToUpper() == "Y")
           {
+              Console.WriteLine("Running in DS2 mode.");
               ds2_mode = true;
           }          
       }
