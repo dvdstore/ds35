@@ -1,6 +1,6 @@
 # mysqlds35_perl_cleanup_multi.pl
 # Script to cleanup or reset ds35 tables in MySQL with a provided number of copies - supporting multiple stores
-# Syntax to run - perl mysqlds3_perl_cleanup_multi.pl <mysql_target> <number_of_stores> <DB Size - example 10> <DB Size Units - MB or GB>
+# Syntax to run - perl mysqlds35_perl_cleanup_multi.pl <mysql_target> <number_of_stores> <DB Size - example 10> <DB Size Units - MB or GB>
 
 use strict;
 use warnings;
@@ -23,6 +23,17 @@ my $str_is_Small_DB = "";
 my $str_is_Medium_DB = "";
 my $str_is_Large_DB = "";
 my $str_file_name = "";
+
+my $pathsep;
+
+if ("$^O" eq "linux")
+{
+	$pathsep = "/";
+}
+else
+{
+        $pathsep = "\\\\";
+};
 
 #Interactive prompts for size
 #print "Please enter following parameters: \n";
@@ -151,6 +162,7 @@ delete from ORDERLINES$k where ORDERID > $i_Ord_Rows;
 delete from CUST_HIST$k where ORDERID > $i_Ord_Rows;
 delete from REVIEWS$k where REVIEW_ID > $i_Review_Rows;
 delete from REVIEWS_HELPFULNESS$k where REVIEW_ID > $i_Review_Rows;
+delete from REORDER$k;
 
 alter table REVIEWS$k ENABLE KEYS;
 alter table REVIEWS_HELPFULNESS$k ENABLE KEYS;
@@ -189,5 +201,8 @@ alter table INVENTORY$k ENABLE KEYS;
   print ("Cleaning Store number $k\n");
   print ("mysql -h $mysqltarget -u web --password=web < mysqlds35_cleanuptables.sql\n");
   system ("mysql -h $mysqltarget -u web --password=web < mysqlds35_cleanuptables.sql");
+  print ("Recreating Triggers\n");
+  print ("mysql -h $mysqltarget -u web --password=web < $mysqltarget${pathsep}mysqlds35_create_trigger.sql\n");
+  system ("mysql -h $mysqltarget -u web --password=web < $mysqltarget${pathsep}mysqlds35_create_trigger.sql");
   #system ("del mysqlds35_cleanuptables.sql");
   }

@@ -1,12 +1,13 @@
 # sqlserverds3_perl_create_sp_multi.pl
 # Script to create a ds3 stored procedures in sql server with a provided number of copies - supporting multiple stores
-# Syntax to run - perl sqlserverds3_perl_create_sp_multi.pl <sqlserver_target> <number_of_stores> 
+# Syntax to run - perl sqlserverds3_perl_create_sp_multi.pl <sqlserver_target> <number_of_stores> <password>
 
 use strict;
 use warnings;
 
 my $sqlservertarget = $ARGV [0];
 my $numberofstores = $ARGV[1];
+my $password = $ARGV[2] || 'password';
 
 my $sqlservertargetdir;
 
@@ -15,10 +16,22 @@ $sqlservertargetdir = $sqlservertarget;
 # remove any backslashes from string to be used for directory name
 $sqlservertargetdir =~ s/\\//;
 
-system ("mkdir $sqlservertargetdir");
+system ("mkdir -p $sqlservertargetdir");
+
+my $pathsep;
+
+# This section enables support for Linux and Windows - detecting the type of OS, and then using the proper commands
+if ("$^O" eq "linux")
+        {
+        $pathsep = "/";
+        }
+else
+        {
+        $pathsep = "\\\\";
+        };
 
 foreach my $k (1 .. $numberofstores){
-	open (my $OUT, ">$sqlservertargetdir\\sqlserverds35_createsp$k.sql") || die("Can't open sqlserverds35_createsp$k.sql");
+	open (my $OUT, ">$sqlservertargetdir${pathsep}sqlserverds35_createsp$k.sql") || die("Can't open sqlserverds35_createsp$k.sql");
 	print $OUT "-- NEW_CUSTOMER
 
 USE DS3
@@ -671,8 +684,8 @@ sleep (1);
 
   
   foreach my $k (1 .. ($numberofstores-1)){
-  system ("start sqlcmd -S $sqlservertarget -U sa -P password -i $sqlservertargetdir\\sqlserverds35_createsp$k.sql");
+  system ("start sqlcmd -C -S $sqlservertarget -U sa -P $password -i $sqlservertargetdir${pathsep}sqlserverds35_createsp$k.sql");
   }
-  system ("sqlcmd -S $sqlservertarget -U sa -P password -i $sqlservertargetdir\\sqlserverds35_createsp$numberofstores.sql");
+  system ("sqlcmd -C -S $sqlservertarget -U sa -P $password -i $sqlservertargetdir${pathsep}sqlserverds35_createsp$numberofstores.sql");
 
 
