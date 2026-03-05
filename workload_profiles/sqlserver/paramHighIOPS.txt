@@ -1,0 +1,12 @@
+db_size=3GB 
+warmup_time=3
+run_time=5
+n_threads=8
+pct_newcustomers=0 
+pct_newmember=0
+pct_newreviews=0
+pct_newhelpfulness=0
+n_reviews=6
+ramp_rate=5
+n_stores=5
+search_depth=10

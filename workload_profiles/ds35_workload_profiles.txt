@@ -1,0 +1,125 @@
+DVD Store 3.5 Workload Profiles - Todd Muirhead 3/4/2026
+
+Intro to Workload Profiles
+
+The DVD Store database testing tool is designed to stress CPU and make CPU the bottleneck on a well tuned system.  The default 
+settings for the DVD Store driver targeted at this default CPU intensive workload profile.  Databases are dependent on more than 
+just CPU and so DVD Store is also dependent on disk, network, and memory performance as well. 
+
+For tests that I do with DVD Store, it is necessary or desired to able to have a different workload profiles that aren't as CPU heavy
+and instead pushes on other resources.  I have been able to achieve different workload profiles by making changes to DVD Store driver
+parameters and the database configuration.  This document details the example workload profiles for network intensive, disk intensive,
+high IOPS, and memory intensive.  Each example will give the DVD Store driver parameters that are different from default and the 
+database configuration needed.  
+
+Performance Delta from CPU Intensive for Network, Disk, High IOPS, and Memory workloads
+
+In order to give an expectation of what is possible with these workload profiles, I include a chart here that shows the relative
+difference in performance between the workload profiles across some performance metrics.  These tests were done with a single virtual
+machine (VM) on an ESX 9.0 host.  The stats are pulled from the ESX host using esxtop and averaged across the entire test run.
+
+Performance Stats in the chart below:
+CPU Utilization - CPU Utilization of the ESX host
+Disk I/O per second (IOPS) - disk read and write operations for ESX host
+Mb received per second (Mb Rec/s) - Megabits received per second via network
+Mb sent per second (Mb Sent/s) - Megabits sent per second via network
+Active Memory (ActiveMem) - Memory touched (or active) recently
+
+Difference relative to CPU (aka default) workload profile
+-------------------------------------------------------------------------------------------------
+ Workload Profile    | CPU Util   | IOPS       | Mb Rec/s      | Mb Sent/s     | ActiveMem      |
+-------------------------------------------------------------------------------------------------
+ CPU                 |    1.0     |    1.0     |    1.0        |    1.0        |    1.0         |
+----------------------
+ Network             |    0.9     |    1.0     |    2.0        |    15.0       |    1.2         |
+----------------------
+ Disk                |    0.9     |    13      |    2.5        |    2.5        |    0.7         |
+----------------------
+ HighIOPS            |    0.7     |    95      |    1.3        |    1.6        |    0.1         |
+----------------------
+ Memory              |    0.6     |    1.2     |    0.3        |    0.3        |    2.9         |
+-------------------------------------------------------------------------------------------------
+
+In summary, in the key metric for each respective workload profile significant increases are seen:
+   - network intensive profile produces 15x more Mb Sent/sec
+   - disk intensive profile produces 13x more IOPS
+   - high IOPS profile produces 95x more IOPS
+   - memory intensive profile causes 2.9x more active memory
+   
+Example DVD Store driver config files are included for their respective databases.  There aren't many differences between
+databases, but there are a few here and there. 
+   
+Each profile is explained in detail below:
+
+
+-------------
+CPU Intensive
+-------------
+DVD Store driver settings:
+Default settings for the driver.  A good starting point to achieve max CPU usage is to set n_threads equal the number
+of CPUs (or vCPUs) of the target database system.  This can vary some and some experimentation is usually needed to
+find the best value for n_threads.
+
+Database Configuration:
+To maximize CPU usage set the data base cache size (Oracle SGA, SQL Server memory, PostgreSQL db_buffers) to be larger
+than the size of the DVD Store database.  This minimizes IOPS and maximizes CPU usage.
+
+-----------------
+Network Intensive
+-----------------
+DVD Store driver settings:
+Decrease CPU usage by decreasing search_depth while at the same time increasing the size and number of responses from
+the database by increasing n_reviews and search_batch_size
+search_depth=50
+n_reviews=10
+search_batch_size=50
+
+Database Configuration:
+Same as CPU intensive to keep disk IOPS minimized.
+
+--------------
+Disk Intensive
+--------------
+In the default CPU intensive configuration, disk IOPS are minimized to a level lower than many database workloads. 
+This profile is probably more in line with a disk intensive database workload.
+DVD Store driver settings:
+Reduce search_depth from default of 500 to reduce CPU usage, causing relatively more disk IOPS
+search_depth=50
+
+Database configuration:
+Set DB cache size to be about 10% of DVD Store database size on disk.  This will cause many more disk reads to come
+from disk and not database cache.  In the case of postgreSQL it was necessary to reduce the RAM for the system 
+becuase it uses linux filesystem cache.  Reduced to 4GB in this example.
+
+---------
+High IOPS
+---------
+The high IOPS workload profile is an attempt to push as many IOPS as possible.  This represents an extreme profile that
+is similar to other IO intensive workloads that absolutely Hammer the DB.
+DVD Store Driver parameters:
+Further reduce search_depth to further reduce CPU usage - causing more IOPS.  Also increase n_reviews to cause more IOPS
+per order.
+search_depth=10
+n_reviews=6
+
+Database configuration:
+Reduce db cache size as much as possible.  In my testing this was about 2% of the size of the DVD Store database.
+In the case of postgreSQL it was necessary to reduce the RAM for the system becuase it uses linux filesystem cache.  
+Reduced to 3GB in this example.
+
+----------------
+Memory Intensive
+----------------
+DVD Store Driver parameters:
+Increase the number of users or threads dramatically from 2x vCPUs to approximately 35x to 40x vCPUs.  In my testing I went from 32
+to 600 threads.  This causes additional memory stress on the database to be able to support all of these users.  In order
+for the database to be able to support all of these users, they must be much less active.  So think_time is increased 
+dramatically from the default of 0. search_depth is increased to cause the queries to span more of the database.  
+search_depth=1000
+think_time=6
+
+Database configuration:
+The size of the database was increased from 5 stores to 10 stores.  This meant that it was 2x as large on disk so that
+there is more data to be cached in memory in the db cache. Increase db cache size to the most possible on the host
+(if not already set as high as possible).
+
